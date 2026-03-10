@@ -1,1 +1,452 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solana Guard | Network Intelligence</title>
 
+    <link rel="icon" type="image/png" href="./assets/logo_solana.png?v=2">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@solana/web3.js@1.95.3/lib/index.iife.min.js"></script>
+    <script src="https://unpkg.com/@bonfida/spl-name-service@latest/dist/index.iife.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=JetBrains+Mono:wght@400;700&display=swap');
+
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #0f172a; margin: 0; overflow-x: hidden; }
+
+        .bg-infrastructure {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1;
+            background-color: #f8fafc; background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+            background-size: 32px 32px; opacity: 0.5;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85); border: 1px solid rgba(0, 0, 0, 0.05);
+            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); border-radius: 1rem;
+        }
+
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        .btn-primary { background: #0f172a; color: #ffffff; transition: all 0.2s ease; }
+        .btn-primary:hover:not(:disabled) { transform: translateY(-2px); background: #1e293b; box-shadow: 0 10px 20px -5px rgba(15, 23, 42, 0.3); }
+        .btn-primary:disabled { background: #cbd5e1; color: #64748b; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        .loader {
+            border: 2px solid rgba(255,255,255,0.3); border-left-color: #fff; border-radius: 50%;
+            width: 16px; height: 16px; animation: spin 0.8s linear infinite; display: inline-block; vertical-align: middle; margin-right: 8px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* CSS para ocultar el traductor de Google */
+        body { top: 0px !important; position: static !important; }
+        .goog-te-banner-frame, iframe.goog-te-banner-frame { display: none !important; visibility: hidden !important; }
+        #goog-gt-tt, .goog-te-balloon-frame { display: none !important; }
+        .goog-text-highlight { background: none !important; box-shadow: none !important; border: none !important; }
+        .skiptranslate { display: none !important; }
+        #customLanguagePicker { display: block !important; }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div class="bg-infrastructure"></div>
+
+    <nav class="px-8 py-4 flex flex-col md:flex-row justify-between items-center border-b border-slate-200 bg-white/70 backdrop-blur-md sticky top-0 z-50 gap-4">
+        <div class="flex items-center gap-3">
+            <img src="./assets/logo_solana.png" alt="Solana Logo" class="w-8 h-8 object-contain">
+            <span class="text-xl font-extrabold tracking-tight text-slate-900">Solana<span class="text-[#9945FF]">Guard</span></span>
+        </div>
+        
+        <div class="flex items-center gap-4">
+            <div class="relative skiptranslate" style="display: block !important;">
+                <select id="customLanguagePicker" onchange="changeLanguage(this.value)" class="appearance-none bg-slate-100 border border-slate-200 text-slate-700 text-xs font-semibold rounded-full focus:outline-none focus:ring-2 focus:ring-[#9945FF] block w-full py-2 pl-4 pr-8 cursor-pointer shadow-sm hover:bg-slate-200">
+                    <option value="es">🇪🇸 Español</option>
+                    <option value="en">🇺🇸 English</option>
+                    <option value="fr">🇫🇷 Français</option>
+                    <option value="pt">🇧🇷 Português</option>
+                </select>
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-500">
+                    <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                </div>
+            </div>
+
+            <div class="hidden md:flex items-center gap-2 px-3 py-1 bg-green-50 text-green-700 border border-green-200 rounded-full text-xs font-bold tracking-widest uppercase">
+                <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_4px_#14f195]"></span> Nodo Helius
+            </div>
+        </div>
+    </nav>
+
+    <div id="google_translate_element" style="display:none;"></div>
+
+    <main class="max-w-6xl mx-auto px-6 py-12">
+        <div class="mb-10 text-center">
+            <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight leading-tight mb-4 text-slate-900">
+                Inteligencia de <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#9945FF] to-[#14F195]">Cadena de Bloques</span>
+            </h1>
+            <p class="text-slate-600 max-w-2xl mx-auto font-medium text-lg">
+                Herramienta OSINT avanzada para el rastreo y auditoría de carteras.
+            </p>
+        </div>
+
+        <div class="max-w-4xl mx-auto mb-8">
+            <div class="glass-panel p-2">
+                <div class="flex flex-col md:flex-row gap-2">
+                    <input id="walletInput" type="text" 
+                        placeholder="Pega una dirección Base58 o dominio .sol..." 
+                        class="flex-1 bg-transparent px-6 py-4 text-slate-900 font-semibold mono text-sm outline-none placeholder:text-slate-400"
+                        onkeypress="if(event.key === 'Enter') initAudit()">
+                    <button id="runBtn" onclick="initAudit()" 
+                        class="btn-primary px-8 py-4 rounded-xl text-sm font-bold uppercase tracking-widest flex items-center justify-center min-w-[200px]">
+                        <span>Iniciar Auditoría</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="mt-4 flex flex-wrap gap-2 text-xs items-center px-2">
+                <span class="text-slate-500 font-bold uppercase tracking-wider">Investigar:</span>
+                <button onclick="setWallet('9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM')" class="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold rounded-md transition-colors">🏛️ Solana Foundation</button>
+                <button onclick="setWallet('5TZNUuuZ8dM9A9DbnwzW6WJjBwV2m5f5BqHqNn2bFqJ5')" class="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold rounded-md transition-colors">🐋 Binance Hot Wallet</button>
+                <button onclick="setWallet('toly.sol')" class="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold rounded-md transition-colors">👨‍💻 toly.sol</button>
+            </div>
+            <div id="recentSearches" class="mt-2 flex flex-wrap gap-2 text-xs items-center px-2 hidden">
+                <span class="text-slate-500 font-bold uppercase tracking-wider">Recientes:</span>
+                <div id="recentTags" class="flex gap-2"></div>
+            </div>
+        </div>
+
+        <div id="errorAlert" class="hidden max-w-4xl mx-auto mb-8 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3 text-red-700 text-sm font-semibold">
+            <span id="errorMsg"></span>
+        </div>
+
+        <div id="dashboard" class="hidden space-y-6 animate-fade-in">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="glass-panel p-6 border-t-4 border-[#14F195]">
+                    <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Balance Principal</p>
+                    <h2 id="dispBal" class="text-3xl font-extrabold text-slate-900 tracking-tight">0.00 <span class="text-lg text-slate-400 font-medium">SOL</span></h2>
+                    <p id="dispUsd" class="text-sm font-semibold text-[#14F195] mt-1">Calculando...</p>
+                </div>
+                <div class="glass-panel p-6 border-t-4 border-[#9945FF]">
+                    <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Estado de Billetera</p>
+                    <h2 id="dispType" class="text-lg font-bold text-slate-900 uppercase mt-1">---</h2>
+                </div>
+                <div class="glass-panel p-6 border-t-4 border-slate-300">
+                    <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Identidad de Red</p>
+                    <h2 id="dispId" class="text-xs font-bold text-slate-600 mono truncate mt-2 bg-slate-100 p-2 rounded-lg border border-slate-200">---</h2>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="glass-panel overflow-hidden border border-slate-200">
+                    <div class="px-6 py-4 border-b border-slate-100 bg-white flex justify-between items-center">
+                        <span class="text-xs font-bold tracking-widest text-slate-800 uppercase">Activos SPL Detectados</span>
+                        <span id="tokenStatus" class="text-[10px] font-bold text-slate-400 uppercase"></span>
+                    </div>
+                    <div class="overflow-y-auto max-h-[400px] bg-slate-50/50">
+                        <table class="w-full text-left mono text-[12px]">
+                            <thead class="bg-slate-100 text-slate-500 uppercase text-[10px] sticky top-0 shadow-sm z-10">
+                                <tr>
+                                    <th class="px-6 py-3 font-semibold">Contrato (Mint)</th>
+                                    <th class="px-6 py-3 font-semibold text-right">Cantidad</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tokenLogs" class="divide-y divide-slate-200 text-slate-700"></tbody>
+                        </table>
+                        <div id="noTokens" class="hidden p-8 text-center text-slate-400 uppercase text-xs font-bold tracking-widest">Sin tokens adicionales</div>
+                    </div>
+                </div>
+
+                <div class="glass-panel overflow-hidden border border-slate-200">
+                    <div class="px-6 py-4 border-b border-slate-100 bg-white flex justify-between items-center">
+                        <span class="text-xs font-bold tracking-widest text-slate-800 uppercase">Últimos Movimientos</span>
+                        <span id="txStatus" class="text-[10px] font-bold text-slate-400 uppercase"></span>
+                    </div>
+                    <div class="overflow-y-auto max-h-[400px] bg-slate-50/50">
+                        <table class="w-full text-left mono text-[12px]">
+                            <thead class="bg-slate-100 text-slate-500 uppercase text-[10px] sticky top-0 shadow-sm z-10">
+                                <tr>
+                                    <th class="px-6 py-3 font-semibold">Firma / Tipo</th>
+                                    <th class="px-6 py-3 font-semibold text-right">Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody id="txLogs" class="divide-y divide-slate-200 text-slate-700"></tbody>
+                        </table>
+                        <div id="noData" class="hidden p-8 text-center text-slate-400 uppercase text-xs font-bold tracking-widest">Sin registros recientes</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8 text-slate-600">
+            <div class="glass-panel p-8">
+                <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center mb-6 text-blue-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </div>
+                <h3 class="text-lg font-bold text-slate-900 mb-3">Transparencia Total</h3>
+                <p class="text-sm leading-relaxed">Solana Guard extrae datos crudos directamente de la cadena de bloques. No almacenamos registros ni intervenimos la información, garantizando una vista pura y auditable de cualquier cuenta pública.</p>
+            </div>
+            
+            <div class="glass-panel p-8">
+                <div class="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center mb-6 text-green-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                </div>
+                <h3 class="text-lg font-bold text-slate-900 mb-3">Gestión de Riesgo</h3>
+                <p class="text-sm leading-relaxed">La información es poder, pero la prudencia es vital en DeFi. Utiliza esta herramienta para mantener siempre un margen de seguridad en tus evaluaciones. Si encuentras un activo prometedor, invierte gradualmente, no todo a la vez.</p>
+            </div>
+
+            <div class="glass-panel p-8">
+                <div class="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center mb-6 text-purple-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                </div>
+                <h3 class="text-lg font-bold text-slate-900 mb-3">Rendimiento Institucional</h3>
+                <p class="text-sm leading-relaxed">Conectados mediante nodos RPC de latencia ultra baja, aseguramos que los saldos y resoluciones de dominios (SNS) mostrados estén confirmados en el estado más reciente de la red principal.</p>
+            </div>
+        </div>
+    </main>
+
+    <script type="text/javascript">
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({ pageLanguage: 'es', includedLanguages: 'es,en,fr,pt', autoDisplay: false }, 'google_translate_element');
+        }
+        function changeLanguage(lang) {
+            var selectField = document.querySelector(".goog-te-combo");
+            if(selectField) { selectField.value = lang; selectField.dispatchEvent(new Event('change')); }
+        }
+        window.onload = function() {
+            renderHistory();
+            setTimeout(() => {
+                let userLang = navigator.language || navigator.userLanguage;
+                let shortLang = userLang.split('-')[0];
+                let supportedLangs = ['en', 'fr', 'pt'];
+                if(supportedLangs.includes(shortLang)) {
+                    document.getElementById('customLanguagePicker').value = shortLang;
+                    changeLanguage(shortLang);
+                }
+            }, 1000);
+        }
+    </script>
+    <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+    <script>
+        const RPC_ENDPOINT = "https://mainnet.helius-rpc.com/?api-key=1a9f7832-186e-4637-97fa-e2981931cb08";
+        const rpc = new solanaWeb3.Connection(RPC_ENDPOINT, "confirmed");
+        const TOKEN_PROGRAM_ID = new solanaWeb3.PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
+
+        function setWallet(address) {
+            document.getElementById('walletInput').value = address;
+            initAudit();
+        }
+
+        function saveToHistory(wallet) {
+            try {
+                let history = JSON.parse(localStorage.getItem('solanaGuardHistory') || '[]');
+                if (!history.includes(wallet)) {
+                    history.unshift(wallet);
+                    if (history.length > 5) history.pop();
+                    localStorage.setItem('solanaGuardHistory', JSON.stringify(history));
+                }
+                renderHistory();
+            } catch(e) {}
+        }
+
+        function renderHistory() {
+            try {
+                let history = JSON.parse(localStorage.getItem('solanaGuardHistory') || '[]');
+                const container = document.getElementById('recentSearches');
+                const tags = document.getElementById('recentTags');
+                if (history.length > 0) {
+                    container.classList.remove('hidden');
+                    tags.innerHTML = history.map(w => `<button onclick="setWallet('${w}')" class="px-3 py-1 bg-[#9945FF]/10 text-[#9945FF] hover:bg-[#9945FF]/20 font-semibold rounded-md transition-colors truncate max-w-[120px]" title="${w}">${w.substring(0,8)}...</button>`).join('');
+                }
+            } catch(e) {}
+        }
+
+        async function loadPriceAsync(solBalance) {
+            try {
+                const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd');
+                if (res.ok) {
+                    const data = await res.json();
+                    document.getElementById('dispUsd').innerText = `≈ $${(solBalance * data.solana.usd).toFixed(2)} USD`;
+                }
+            } catch (e) {
+                document.getElementById('dispUsd').innerText = "Precio no disponible";
+            }
+        }
+
+        async function loadTokensAsync(targetKey) {
+            const tokenLogs = document.getElementById('tokenLogs');
+            const noTokens = document.getElementById('noTokens');
+            const tokenStatus = document.getElementById('tokenStatus');
+            tokenStatus.innerText = "Buscando...";
+            
+            try {
+                const tokenAccounts = await rpc.getParsedTokenAccountsByOwner(targetKey, { programId: TOKEN_PROGRAM_ID });
+                const validTokens = tokenAccounts.value.filter(t => t.account.data.parsed.info.tokenAmount.uiAmount > 0);
+                
+                if (validTokens.length === 0) {
+                    noTokens.classList.remove('hidden');
+                    noTokens.innerText = "Sin tokens adicionales";
+                } else {
+                    let tokenHTML = "";
+                    validTokens.sort((a, b) => b.account.data.parsed.info.tokenAmount.uiAmount - a.account.data.parsed.info.tokenAmount.uiAmount)
+                    .forEach(t => {
+                        const mint = t.account.data.parsed.info.mint;
+                        tokenHTML += `
+                            <tr class="hover:bg-slate-100 transition-colors">
+                                <td class="px-6 py-3 text-[#9945FF] font-medium truncate max-w-[150px]" title="${mint}">
+                                    <a href="https://solscan.io/token/${mint}" target="_blank" class="hover:underline">${mint.substring(0,8)}...${mint.slice(-4)}</a>
+                                </td>
+                                <td class="px-6 py-3 text-right font-semibold">${t.account.data.parsed.info.tokenAmount.uiAmountString}</td>
+                            </tr>`;
+                    });
+                    tokenLogs.innerHTML = tokenHTML;
+                }
+            } catch (e) {
+                noTokens.classList.remove('hidden');
+                noTokens.innerText = "Error al cargar tokens";
+            } finally {
+                tokenStatus.innerText = "";
+            }
+        }
+
+        async function loadTransactionsAsync(sigs) {
+            const txLogs = document.getElementById('txLogs');
+            const txStatus = document.getElementById('txStatus');
+            const sigList = sigs.map(s => s.signature);
+            txStatus.innerText = "Analizando DEX...";
+            let txHTML = "";
+
+            try {
+                const parsedTxs = await rpc.getParsedTransactions(sigList, { maxSupportedTransactionVersion: 0 });
+
+                parsedTxs.forEach((tx, index) => {
+                    const signature = sigList[index];
+                    const isError = sigs[index].err; 
+                    let dexTag = "Transferencia";
+                    let dexStyles = "bg-slate-200 text-slate-700";
+
+                    if (tx && tx.meta && tx.meta.logMessages) {
+                        const logs = tx.meta.logMessages;
+                        if (logs.some(m => m.includes("JUP6LkbZbjS1jKKwapdH67y95y17H4zCCYATqwP2nB1R") || m.includes("Jupiter"))) {
+                            dexTag = "Jupiter Swap"; dexStyles = "bg-green-100 text-green-700";
+                        } else if (logs.some(m => m.includes("675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8") || m.includes("Raydium"))) {
+                            dexTag = "Raydium"; dexStyles = "bg-blue-100 text-blue-700";
+                        } else if (logs.some(m => m.includes("6EF8rrecthR5Dkzon8Nwu78hRvfX4A1e2IPV2CG2V4s"))) {
+                            dexTag = "Pump.fun"; dexStyles = "bg-yellow-100 text-yellow-700";
+                        }
+                    }
+
+                    const statusStyles = isError ? 'text-red-600 bg-red-100' : 'text-green-700 bg-green-100';
+                    const statusText = isError ? 'FALLO' : 'ÉXITO';
+                    
+                    txHTML += `
+                        <tr class="hover:bg-slate-100 transition-colors">
+                            <td class="px-6 py-3">
+                                <div class="flex flex-col gap-1">
+                                    <a href="https://solscan.io/tx/${signature}" target="_blank" class="text-blue-600 hover:underline font-medium">
+                                        ${signature.substring(0, 16)}...
+                                    </a>
+                                    <span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold tracking-widest uppercase w-fit ${dexStyles}">${dexTag}</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-3 text-right align-top">
+                                <span class="px-2 py-1 rounded text-[9px] font-bold tracking-widest ${statusStyles}">${statusText}</span>
+                            </td>
+                        </tr>`;
+                });
+                
+            } catch (e) {
+                console.warn("Fallo al parsear transacciones, vista básica.");
+                sigs.forEach(s => {
+                    const isError = s.err;
+                    const statusStyles = isError ? 'text-red-600 bg-red-100' : 'text-green-700 bg-green-100';
+                    txHTML += `
+                        <tr class="hover:bg-slate-100 transition-colors">
+                            <td class="px-6 py-3"><a href="https://solscan.io/tx/${s.signature}" target="_blank" class="text-blue-600 hover:underline font-medium">${s.signature.substring(0, 16)}...</a></td>
+                            <td class="px-6 py-3 text-right"><span class="px-2 py-1 rounded text-[9px] font-bold tracking-widest ${statusStyles}">${isError ? 'FALLO' : 'ÉXITO'}</span></td>
+                        </tr>`;
+                });
+            } finally {
+                txLogs.innerHTML = txHTML;
+                txStatus.innerText = "";
+            }
+        }
+
+        async function initAudit() {
+            const rawInput = document.getElementById('walletInput').value.trim();
+            const dash = document.getElementById('dashboard');
+            const btn = document.getElementById('runBtn');
+            const txLogs = document.getElementById('txLogs');
+            const tokenLogs = document.getElementById('tokenLogs');
+
+            document.getElementById('errorAlert').classList.add('hidden');
+            dash.classList.add('hidden');
+            txLogs.innerHTML = "";
+            tokenLogs.innerHTML = "";
+            document.getElementById('noData').classList.add('hidden');
+            document.getElementById('noTokens').classList.add('hidden');
+
+            if (!rawInput) return showError("Por favor, introduce una dirección válida.");
+
+            btn.innerHTML = '<span class="loader"></span> Analizando...';
+            btn.disabled = true;
+
+            try {
+                let targetKey;
+
+                if (rawInput.toLowerCase().endsWith('.sol')) {
+                    targetKey = await splNameService.resolve(rpc, rawInput);
+                    document.getElementById('dispType').innerText = "Dominio SNS";
+                    document.getElementById('dispId').innerText = rawInput;
+                } else {
+                    const sanitized = rawInput.replace(/[^1-9A-HJ-NP-Za-km-z]/g, '');
+                    if (sanitized.length < 32) throw new Error("Formato de Wallet inválido.");
+                    targetKey = new solanaWeb3.PublicKey(sanitized);
+                    document.getElementById('dispType').innerText = "Billetera Estándar";
+                    document.getElementById('dispId').innerText = sanitized; 
+                }
+
+                saveToHistory(rawInput);
+
+                // PETICIÓN ULTRA RÁPIDA (Solo Balance y Firmas básicas)
+                const [bal, sigs] = await Promise.all([
+                    rpc.getBalance(targetKey),
+                    rpc.getSignaturesForAddress(targetKey, { limit: 12 })
+                ]);
+
+                // Render Inmediato
+                const solBalance = bal / 1e9;
+                document.getElementById('dispBal').innerText = solBalance.toFixed(4);
+                document.getElementById('dispUsd').innerText = "Calculando...";
+                
+                dash.classList.remove('hidden');
+                btn.innerHTML = '<span>Iniciar Auditoría</span>';
+                btn.disabled = false;
+
+                // LANZAMIENTO DE TAREAS EN SEGUNDO PLANO (Fire and forget)
+                loadPriceAsync(solBalance);
+                loadTokensAsync(targetKey);
+                
+                if (sigs.length === 0) {
+                    document.getElementById('noData').classList.remove('hidden');
+                } else {
+                    loadTransactionsAsync(sigs);
+                }
+
+            } catch (err) {
+                showError(err.message || "Error al conectar con la red.");
+                btn.innerHTML = '<span>Iniciar Auditoría</span>';
+                btn.disabled = false;
+            }
+        }
+
+        function showError(message) {
+            document.getElementById('errorMsg').innerText = message;
+            document.getElementById('errorAlert').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
