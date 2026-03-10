@@ -29,9 +29,9 @@
     <link rel="apple-touch-icon" href="./assets/logo_solana.png">
 
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/@solana/web3.js@1.95.3/lib/index.iife.min.js"></script>
-    <!-- SPL Name Service — versión estable con IIFE correcto -->
-    <script src="https://cdn.jsdelivr.net/npm/@bonfida/spl-name-service@3.0.3/dist/browser/bonfida-spl-name-service.iife.js" onerror="console.warn('SNS lib failed to load')"></script>
+    <!-- Solana Web3: jsdelivr primario + unpkg fallback -->
+    <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.95.3/lib/index.iife.min.js"
+            onerror="var s=document.createElement('script');s.src='https://unpkg.com/@solana/web3.js@1.95.3/lib/index.iife.min.js';document.head.appendChild(s)"></script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=JetBrains+Mono:wght@400;700&display=swap');
@@ -345,55 +345,56 @@
     <!-- ══════════════════════════════════════════════════════ -->
     <script>
         const RPC_ENDPOINT = "https://mainnet.helius-rpc.com/?api-key=1a9f7832-186e-4637-97fa-e2981931cb08";
-        const rpc = new solanaWeb3.Connection(RPC_ENDPOINT, "confirmed");
-        const TOKEN_PROGRAM_ID = new solanaWeb3.PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
 
-        // ── Resolución SNS (.sol) con múltiples estrategias ──
+        // Esperar a que solanaWeb3 esté disponible (por si el CDN tarda)
+        function waitForSolana(cb, tries) {
+            tries = tries || 0;
+            if (typeof solanaWeb3 !== 'undefined') { cb(); return; }
+            if (tries > 50) { console.error('solanaWeb3 no cargó tras 5s'); return; }
+            setTimeout(() => waitForSolana(cb, tries + 1), 100);
+        }
+
+        let rpc, TOKEN_PROGRAM_ID;
+        waitForSolana(function() {
+            rpc = new solanaWeb3.Connection(RPC_ENDPOINT, "confirmed");
+            TOKEN_PROGRAM_ID = new solanaWeb3.PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
+        });
+
+        // ── Resolución SNS (.sol) ──
+        // Protocolo Bonfida: seed = SHA-256(\x00 + name), PDA = [seed, SOL_TLD]
         async function resolveSolDomain(input) {
-            const domainName = input.toLowerCase().trim();
-            const name = domainName.replace(/\.sol$/, '');
-
-            // Estrategia 1: librería Bonfida si cargó bien
-            const lib = window.BonfidaSplNameService || window.splNameService;
-            if (lib) {
-                if (typeof lib.resolve === 'function') {
-                    try { return await lib.resolve(rpc, domainName); } catch(e) { console.warn('lib.resolve failed:', e.message); }
-                }
-                if (typeof lib.getDomainKey === 'function') {
-                    try {
-                        const { pubkey } = await lib.getDomainKey(name);
-                        const info = await rpc.getAccountInfo(pubkey);
-                        if (info && info.data.length >= 64) {
-                            const ownerBytes = info.data.slice(32, 64);
-                            return new solanaWeb3.PublicKey(ownerBytes);
-                        }
-                    } catch(e) { console.warn('getDomainKey failed:', e.message); }
-                }
+            if (typeof solanaWeb3 === 'undefined') {
+                throw new Error('La librería Solana no cargó. Recarga la página e inténtalo de nuevo.');
             }
-
-            // Estrategia 2: derivación manual de PDA según protocolo SNS v1
+            const name = input.toLowerCase().trim().replace(/\.sol$/, '');
             try {
                 const SNS_PROGRAM = new solanaWeb3.PublicKey("namesLPneVptA9Z5rqUDD9tMTWEJwofgaYwp8cawRkX");
-                const ROOT_TLD   = new solanaWeb3.PublicKey("58PwtjSDuFHuUkYjH9BYnnQKHfwo9reZhC2zMJv9JPkx");
+                const SOL_TLD     = new solanaWeb3.PublicKey("58PwtjSDuFHuUkYjH9BYnnQKHfwo9reZhC2zMJv9JPkx");
 
-                const encoder  = new TextEncoder();
-                const rawHash  = await crypto.subtle.digest('SHA-256', encoder.encode(name));
-                const hashArr  = new Uint8Array(rawHash);
+                // Hash con prefijo byte nulo — exactamente getHashedNameSync del SDK oficial
+                const nameBytes    = new TextEncoder().encode(name);
+                const prefixed     = new Uint8Array(1 + nameBytes.length);
+                prefixed[0]        = 0;
+                prefixed.set(nameBytes, 1);
+                const hashBuf      = await crypto.subtle.digest('SHA-256', prefixed);
+                const hashedName   = new Uint8Array(hashBuf);
 
                 const [domainKey] = await solanaWeb3.PublicKey.findProgramAddress(
-                    [hashArr, ROOT_TLD.toBuffer()], SNS_PROGRAM
+                    [hashedName, SOL_TLD.toBuffer()],
+                    SNS_PROGRAM
                 );
 
                 const accountInfo = await rpc.getAccountInfo(domainKey);
-                if (!accountInfo) throw new Error(`El dominio "${domainName}" no existe o no está registrado en SNS.`);
+                if (!accountInfo) throw new Error(`El dominio "${name}.sol" no está registrado.`);
+                if (accountInfo.data.length < 64) throw new Error(`Datos insuficientes para "${name}.sol".`);
 
-                // Bytes 32-64 del data = owner de la cuenta de nombre
-                if (accountInfo.data.length >= 64) {
-                    return new solanaWeb3.PublicKey(accountInfo.data.slice(32, 64));
-                }
-                return accountInfo.owner;
+                const ownerKey = new solanaWeb3.PublicKey(accountInfo.data.slice(32, 64));
+                const ZERO_KEY = new solanaWeb3.PublicKey("11111111111111111111111111111111");
+                if (ownerKey.equals(ZERO_KEY)) throw new Error(`"${name}.sol" no tiene dueño asignado.`);
+                return ownerKey;
             } catch(e) {
-                throw new Error(`No se pudo resolver "${domainName}": ${e.message}`);
+                if (e.message.includes('.sol')) throw e;
+                throw new Error(`No se pudo resolver "${name}.sol": ${e.message}`);
             }
         }
 
@@ -499,6 +500,10 @@
         }
 
         async function initAudit() {
+            if (typeof solanaWeb3 === 'undefined' || !rpc) {
+                showError('La librería Solana aún está cargando. Espera un momento y vuelve a intentarlo.');
+                return;
+            }
             const rawInput = document.getElementById('walletInput').value.trim();
             const dash = document.getElementById('dashboard');
             const btn  = document.getElementById('runBtn');
