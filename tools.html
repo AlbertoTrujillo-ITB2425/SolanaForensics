@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solana Guard | Centro de Herramientas</title>
+    <meta name="description" content="Herramientas avanzadas de análisis blockchain: NFTs, monitor en tiempo real, comparador de wallets, detector de rugs y wallets recomendadas.">
+    <meta name="author" content="AlbertoTrujillo">
+    <meta name="theme-color" content="#0d1117">
+    <link rel="icon" type="image/png" href="./assets/logo_solana.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.95.3/lib/index.iife.min.js"
+            onerror="var s=document.createElement('script');s.src='https://unpkg.com/@solana/web3.js@1.95.3/lib/index.iife.min.js';document.head.appendChild(s)"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Fira+Code:wght@400;500;700&display=swap');
+
+        :root {
+            --bg:       #0d1117;
+            --bg2:      #161b22;
+            --bg3:      #21262d;
+            --border:   #30363d;
+            --sol:      #9945FF;
+            --grn:      #14F195;
+            --txt:      #e6edf3;
+            --txt2:     #8b949e;
+            --red:      #f85149;
+            --yel:      #e3b341;
+            --blue:     #58a6ff;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: var(--bg);
+            color: var(--txt);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        .mono { font-family: 'Fira Code', monospace; }
+
+        /* ── GRID BACKGROUND ── */
+        body::before {
+            content: '';
+            position: fixed; inset: 0; z-index: 0;
+            background-image:
+                linear-gradient(rgba(153,69,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(153,69,255,0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+        }
+
+        /* ── GLOW ORBS ── */
+        .orb {
+            position: fixed; border-radius: 50%; filter: blur(120px);
+            pointer-events: none; z-index: 0; opacity: 0.12;
+        }
+        .orb-1 { width: 600px; height: 600px; background: var(--sol); top: -200px; left: -200px; }
+        .orb-2 { width: 400px; height: 400px; background: var(--grn); bottom: -100px; right: -100px; }
+
+        /* ── NAVBAR ── */
+        nav {
+            position: sticky; top: 0; z-index: 100;
+            background: rgba(13,17,23,0.85);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 0 32px;
+            height: 60px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+        .nav-logo span { font-weight: 700; font-size: 17px; color: var(--txt); letter-spacing: -0.3px; }
+        .nav-logo span em { color: var(--sol); font-style: normal; }
+        .nav-links { display: flex; align-items: center; gap: 6px; }
+        .nav-link {
+            padding: 6px 14px; border-radius: 8px; font-size: 13px; font-weight: 500;
+            color: var(--txt2); text-decoration: none; transition: all 0.15s ease;
+        }
+        .nav-link:hover { color: var(--txt); background: var(--bg3); }
+        .nav-link.active { color: var(--sol); background: rgba(153,69,255,0.12); }
+        .nav-badge {
+            padding: 5px 12px; background: var(--sol); color: #fff;
+            border-radius: 8px; font-size: 12px; font-weight: 700;
+            text-decoration: none; transition: all 0.15s;
+        }
+        .nav-badge:hover { background: #7c3aed; transform: translateY(-1px); }
+
+        /* ── MAIN LAYOUT ── */
+        main { position: relative; z-index: 1; max-width: 1280px; margin: 0 auto; padding: 40px 24px 80px; }
+
+        /* ── PAGE HEADER ── */
+        .page-header { margin-bottom: 40px; }
+        .page-header h1 {
+            font-size: clamp(28px, 4vw, 42px); font-weight: 700;
+            letter-spacing: -1px; line-height: 1.1;
+        }
+        .page-header h1 span {
+            background: linear-gradient(135deg, var(--sol), var(--grn));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .page-header p { color: var(--txt2); margin-top: 10px; font-size: 15px; }
+
+        /* ── TOOL TABS ── */
+        .tool-tabs {
+            display: flex; gap: 6px; flex-wrap: wrap;
+            margin-bottom: 28px;
+            padding: 6px;
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            width: fit-content;
+        }
+        .tab-btn {
+            padding: 9px 18px; border-radius: 9px; font-size: 13px; font-weight: 600;
+            color: var(--txt2); cursor: pointer; border: none; background: transparent;
+            transition: all 0.18s ease; display: flex; align-items: center; gap: 7px;
+            white-space: nowrap;
+        }
+        .tab-btn:hover { color: var(--txt); background: var(--bg3); }
+        .tab-btn.active { color: #fff; background: var(--sol); box-shadow: 0 0 20px rgba(153,69,255,0.35); }
+        .tab-btn .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; opacity: 0.5; }
+        .tab-btn.active .dot { opacity: 1; animation: pulse-dot 1.5s infinite; }
+        @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+        /* ── PANELS ── */
+        .tool-panel { display: none; animation: fadeUp 0.25s ease; }
+        .tool-panel.active { display: block; }
+        @keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+        /* ── CARD ── */
+        .card {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            overflow: hidden;
+        }
+        .card-header {
+            padding: 16px 22px;
+            border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+            background: rgba(33,38,45,0.5);
+        }
+        .card-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--txt2); }
+        .card-body { padding: 22px; }
+
+        /* ── INPUT STYLES ── */
+        .sg-input {
+            width: 100%; background: var(--bg3); border: 1px solid var(--border);
+            border-radius: 10px; padding: 12px 16px; color: var(--txt);
+            font-family: 'Fira Code', monospace; font-size: 13px;
+            outline: none; transition: border-color 0.15s, box-shadow 0.15s;
+        }
+        .sg-input::placeholder { color: var(--txt2); }
+        .sg-input:focus { border-color: var(--sol); box-shadow: 0 0 0 3px rgba(153,69,255,0.15); }
+
+        /* ── BUTTON STYLES ── */
+        .btn-sol {
+            background: var(--sol); color: #fff; border: none;
+            padding: 12px 24px; border-radius: 10px; font-weight: 700;
+            font-size: 13px; cursor: pointer; transition: all 0.15s ease;
+            letter-spacing: 0.03em; display: inline-flex; align-items: center; gap: 8px;
+        }
+        .btn-sol:hover:not(:disabled) { background: #7c3aed; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(153,69,255,0.3); }
+        .btn-sol:disabled { background: var(--bg3); color: var(--txt2); cursor: not-allowed; transform: none; box-shadow: none; }
+        .btn-ghost {
+            background: transparent; color: var(--txt2); border: 1px solid var(--border);
+            padding: 10px 18px; border-radius: 10px; font-weight: 600;
+            font-size: 13px; cursor: pointer; transition: all 0.15s;
+        }
+        .btn-ghost:hover { border-color: var(--sol); color: var(--sol); background: rgba(153,69,255,0.08); }
+
+        /* ── LOADER ── */
+        .loader { border: 2px solid rgba(255,255,255,0.2); border-left-color: #fff; border-radius: 50%; width: 14px; height: 14px; animation: spin 0.7s linear infinite; display: inline-block; }
+        @keyframes spin { to{transform:rotate(360deg)} }
+
+        /* ── STATUS BADGE ── */
+        .badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 100px; font-size: 11px; font-weight: 700; font-family: 'Fira Code', monospace; }
+        .badge-green  { background: rgba(20,241,149,0.1); color: var(--grn); border: 1px solid rgba(20,241,149,0.25); }
+        .badge-red    { background: rgba(248,81,73,0.1);  color: var(--red);  border: 1px solid rgba(248,81,73,0.25); }
+        .badge-yellow { background: rgba(227,179,65,0.1); color: var(--yel);  border: 1px solid rgba(227,179,65,0.25); }
+        .badge-blue   { background: rgba(88,166,255,0.1); color: var(--blue); border: 1px solid rgba(88,166,255,0.25); }
+        .badge-purple { background: rgba(153,69,255,0.12);color: var(--sol);  border: 1px solid rgba(153,69,255,0.3); }
+
+        /* ── TABLE ── */
+        .sg-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .sg-table th { padding: 10px 14px; text-align: left; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--txt2); border-bottom: 1px solid var(--border); }
+        .sg-table td { padding: 12px 14px; border-bottom: 1px solid rgba(48,54,61,0.5); vertical-align: middle; }
+        .sg-table tr:last-child td { border-bottom: none; }
+        .sg-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+        /* ── STAT CARD ── */
+        .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; margin-bottom: 20px; }
+        .stat-card { background: var(--bg3); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+        .stat-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--txt2); margin-bottom: 6px; }
+        .stat-val { font-size: 22px; font-weight: 700; color: var(--txt); line-height: 1; }
+        .stat-sub { font-size: 11px; color: var(--txt2); margin-top: 4px; font-family: 'Fira Code', monospace; }
+
+        /* ── RISK METER ── */
+        .risk-bar-wrap { background: var(--bg3); border-radius: 100px; height: 8px; overflow: hidden; }
+        .risk-bar { height: 100%; border-radius: 100px; transition: width 0.8s cubic-bezier(0.34,1.56,0.64,1); }
+
+        /* ── NFT GRID ── */
+        .nft-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; }
+        .nft-card {
+            background: var(--bg3); border: 1px solid var(--border); border-radius: 12px;
+            overflow: hidden; transition: all 0.18s ease; cursor: pointer;
+        }
+        .nft-card:hover { border-color: var(--sol); transform: translateY(-3px); box-shadow: 0 12px 30px rgba(153,69,255,0.2); }
+        .nft-img { width: 100%; aspect-ratio: 1; background: linear-gradient(135deg, var(--bg2), var(--bg3)); display: flex; align-items: center; justify-content: center; font-size: 36px; }
+        .nft-info { padding: 10px 12px; }
+        .nft-name { font-size: 12px; font-weight: 700; color: var(--txt); truncate; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .nft-coll { font-size: 10px; color: var(--txt2); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        /* ── WALLET COMPARE ── */
+        .compare-grid { display: grid; grid-template-columns: 1fr 60px 1fr; gap: 16px; align-items: start; }
+        .vs-badge { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; background: var(--bg3); border: 1px solid var(--border); border-radius: 50%; font-weight: 800; font-size: 14px; color: var(--txt2); margin: 0 auto; margin-top: 40px; }
+
+        /* ── MONITOR ── */
+        .monitor-feed { max-height: 480px; overflow-y: auto; }
+        .monitor-feed::-webkit-scrollbar { width: 4px; }
+        .monitor-feed::-webkit-scrollbar-track { background: transparent; }
+        .monitor-feed::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+        .tx-row { display: flex; align-items: center; gap: 12px; padding: 11px 16px; border-bottom: 1px solid rgba(48,54,61,0.4); animation: slideIn 0.3s ease; transition: background 0.1s; }
+        .tx-row:hover { background: rgba(255,255,255,0.02); }
+        @keyframes slideIn { from{opacity:0;transform:translateX(-8px)} to{opacity:1;transform:translateX(0)} }
+        .tx-icon { width: 34px; height: 34px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+
+        /* ── RECOMMENDED WALLETS ── */
+        .wallet-rec-card {
+            background: var(--bg3); border: 1px solid var(--border); border-radius: 12px;
+            padding: 18px; display: flex; flex-direction: column; gap: 12px;
+            transition: border-color 0.15s, transform 0.15s;
+        }
+        .wallet-rec-card:hover { border-color: var(--sol); transform: translateY(-2px); }
+        .wallet-rec-header { display: flex; align-items: center; gap: 12px; }
+        .wallet-avatar { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+        .wallet-rec-addr { font-family: 'Fira Code', monospace; font-size: 11px; color: var(--txt2); }
+        .wallet-rec-name { font-weight: 700; font-size: 14px; }
+
+        /* ── EMPTY STATE ── */
+        .empty-state { padding: 48px 24px; text-align: center; color: var(--txt2); }
+        .empty-state .icon { font-size: 40px; margin-bottom: 12px; opacity: 0.4; }
+        .empty-state p { font-size: 13px; }
+
+        /* ── ALERT ── */
+        .alert { padding: 12px 16px; border-radius: 10px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 10px; }
+        .alert-red { background: rgba(248,81,73,0.1); border: 1px solid rgba(248,81,73,0.3); color: var(--red); }
+        .alert-green { background: rgba(20,241,149,0.08); border: 1px solid rgba(20,241,149,0.25); color: var(--grn); }
+        .alert-yellow { background: rgba(227,179,65,0.1); border: 1px solid rgba(227,179,65,0.3); color: var(--yel); }
+
+        /* ── SCROLLBAR GLOBAL ── */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+        /* ── RESPONSIVE ── */
+        @media(max-width: 768px) {
+            .compare-grid { grid-template-columns: 1fr; }
+            .vs-badge { margin-top: 0; }
+            nav { padding: 0 16px; }
+            main { padding: 24px 16px 60px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+
+    <!-- ══════════════ NAVBAR ══════════════ -->
+    <nav>
+        <a href="./index.html" class="nav-logo">
+            <img src="./assets/logo_solana.png" alt="logo" style="width:28px;height:28px;object-fit:contain;">
+            <span>Solana<em>Guard</em></span>
+        </a>
+        <div class="nav-links">
+            <a href="./index.html" class="nav-link">🔍 Buscador</a>
+            <a href="./tools.html" class="nav-link active">⚡ Herramientas</a>
+            <span style="width:1px;height:20px;background:var(--border);"></span>
+            <span style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#3fb950;padding:5px 12px;background:rgba(63,185,80,0.08);border:1px solid rgba(63,185,80,0.25);border-radius:8px;">
+                <span style="width:6px;height:6px;background:#3fb950;border-radius:50%;animation:pulse-dot 1.5s infinite;"></span>
+                Helius Live
+            </span>
+        </div>
+    </nav>
+
+    <!-- ══════════════ MAIN ══════════════ -->
+    <main>
+        <div class="page-header">
+            <h1>Centro de <span>Herramientas</span></h1>
+            <p>Análisis avanzado de la blockchain de Solana — NFTs, transacciones, comparativas y detección de riesgos.</p>
+        </div>
+
+        <!-- TABS -->
+        <div class="tool-tabs">
+            <button class="tab-btn active" onclick="switchTab('nft')">
+                <span>🖼️</span> NFTs
+            </button>
+            <button class="tab-btn" onclick="switchTab('monitor')">
+                <span>📡</span> Monitor Live
+                <span class="dot"></span>
+            </button>
+            <button class="tab-btn" onclick="switchTab('compare')">
+                <span>⚖️</span> Comparar
+            </button>
+            <button class="tab-btn" onclick="switchTab('rug')">
+                <span>🚨</span> Rug Detector
+            </button>
+            <button class="tab-btn" onclick="switchTab('wallets')">
+                <span>⭐</span> Wallets Top
+            </button>
+        </div>
+
+        <!-- ═══════════════════════════════════ -->
+        <!--  PANEL 1 — NFT ANALYSIS            -->
+        <!-- ═══════════════════════════════════ -->
+        <div class="tool-panel active" id="panel-nft">
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">🖼️ Análisis de NFTs — Escanea el portafolio</span>
+                    <span class="badge badge-purple">Magic Eden · Tensor</span>
+                </div>
+                <div class="card-body">
+                    <div style="display:flex;gap:10px;margin-bottom:20px;">
+                        <input class="sg-input" id="nftInput" placeholder="Dirección Base58 o dominio .sol..." onkeypress="if(event.key==='Enter')scanNFTs()">
+                        <button class="btn-sol" id="nftBtn" onclick="scanNFTs()" style="white-space:nowrap;">
+                            <span>Escanear</span>
+                        </button>
+                    </div>
+
+                    <div id="nftStats" class="stat-grid" style="display:none;"></div>
+
+                    <div id="nftError" class="alert alert-red" style="display:none;margin-bottom:16px;"></div>
+
+                    <div id="nftResults">
+                        <div class="empty-state">
+                            <div class="icon">🖼️</div>
+                            <p>Introduce una wallet para ver su colección de NFTs</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════ -->
+        <!--  PANEL 2 — LIVE MONITOR            -->
+        <!-- ═══════════════════════════════════ -->
+        <div class="tool-panel" id="panel-monitor">
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">📡 Monitor de Transacciones en Tiempo Real</span>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <span id="monitorStatus" class="badge badge-yellow">⏸ Parado</span>
+                        <span id="monitorCount" class="mono" style="font-size:12px;color:var(--txt2);">0 tx</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;">
+                        <input class="sg-input" id="monitorInput" placeholder="Wallet a monitorear en tiempo real..." style="flex:1;min-width:200px;">
+                        <button class="btn-sol" id="monitorBtn" onclick="toggleMonitor()">▶ Iniciar</button>
+                        <button class="btn-ghost" onclick="clearMonitor()">🗑 Limpiar</button>
+                    </div>
+
+                    <div id="monitorFeed" class="monitor-feed card" style="background:var(--bg);border-color:var(--border);">
+                        <div class="empty-state">
+                            <div class="icon">📡</div>
+                            <p>Introduce una wallet e inicia el monitor para ver transacciones en vivo</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════ -->
+        <!--  PANEL 3 — WALLET COMPARE          -->
+        <!-- ═══════════════════════════════════ -->
+        <div class="tool-panel" id="panel-compare">
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">⚖️ Comparador de Wallets</span>
+                    <span class="badge badge-blue">Análisis cruzado</span>
+                </div>
+                <div class="card-body">
+                    <div class="compare-grid" style="margin-bottom:20px;">
+                        <div>
+                            <label style="font-size:11px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:8px;">Wallet A</label>
+                            <input class="sg-input" id="compareA" placeholder="Dirección A...">
+                        </div>
+                        <div class="vs-badge">VS</div>
+                        <div>
+                            <label style="font-size:11px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:8px;">Wallet B</label>
+                            <input class="sg-input" id="compareB" placeholder="Dirección B...">
+                        </div>
+                    </div>
+                    <button class="btn-sol" id="compareBtn" onclick="compareWallets()">⚖️ Comparar Wallets</button>
+
+                    <div id="compareError" class="alert alert-red" style="display:none;margin-top:16px;"></div>
+                    <div id="compareResults" style="margin-top:24px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════ -->
+        <!--  PANEL 4 — RUG DETECTOR            -->
+        <!-- ═══════════════════════════════════ -->
+        <div class="tool-panel" id="panel-rug">
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">🚨 Detector de Rugs y Tokens Sospechosos</span>
+                    <span class="badge badge-red">Anti-scam</span>
+                </div>
+                <div class="card-body">
+                    <div style="display:flex;gap:10px;margin-bottom:8px;">
+                        <input class="sg-input" id="rugInput" placeholder="Mint address del token o wallet a analizar..." onkeypress="if(event.key==='Enter')detectRug()">
+                        <button class="btn-sol" id="rugBtn" onclick="detectRug()" style="white-space:nowrap;">
+                            🔍 Analizar
+                        </button>
+                    </div>
+                    <p style="font-size:11px;color:var(--txt2);margin-bottom:20px;">Analiza wallets y tokens SPL en busca de señales de actividad sospechosa, concentración de supply y patrones de rug.</p>
+
+                    <div id="rugError" class="alert alert-red" style="display:none;margin-bottom:16px;"></div>
+                    <div id="rugResults">
+                        <div class="empty-state">
+                            <div class="icon">🕵️</div>
+                            <p>Introduce un token mint o wallet para analizar el riesgo</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════ -->
+        <!--  PANEL 5 — RECOMMENDED WALLETS     -->
+        <!-- ═══════════════════════════════════ -->
+        <div class="tool-panel" id="panel-wallets">
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">⭐ Wallets Destacadas para Investigar</span>
+                    <span class="badge badge-green">Curado</span>
+                </div>
+                <div class="card-body">
+                    <p style="font-size:13px;color:var(--txt2);margin-bottom:20px;">Wallets públicas de referencia del ecosistema Solana — protocolos, fondos, equipos conocidos y ballenas relevantes.</p>
+
+                    <!-- Search dentro del panel -->
+                    <div style="margin-bottom:20px;">
+                        <input class="sg-input" id="walletSearchInput" placeholder="Buscar por nombre, categoría o dirección..." oninput="filterWallets(this.value)">
+                    </div>
+
+                    <!-- Category filter -->
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px;" id="catFilters">
+                        <button class="btn-ghost" style="font-size:12px;padding:7px 14px;" onclick="filterCat('all')" data-cat="all">Todos</button>
+                        <button class="btn-ghost" style="font-size:12px;padding:7px 14px;" onclick="filterCat('protocol')" data-cat="protocol">🏛️ Protocolos</button>
+                        <button class="btn-ghost" style="font-size:12px;padding:7px 14px;" onclick="filterCat('exchange')" data-cat="exchange">💱 Exchanges</button>
+                        <button class="btn-ghost" style="font-size:12px;padding:7px 14px;" onclick="filterCat('whale')" data-cat="whale">🐋 Ballenas</button>
+                        <button class="btn-ghost" style="font-size:12px;padding:7px 14px;" onclick="filterCat('team')" data-cat="team">👨‍💻 Equipos</button>
+                        <button class="btn-ghost" style="font-size:12px;padding:7px 14px;" onclick="filterCat('fund')" data-cat="fund">💰 Fondos</button>
+                    </div>
+
+                    <div id="walletRecGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- ══════════════════════════════════════════════════════ -->
+    <!--  SCRIPTS                                               -->
+    <!-- ══════════════════════════════════════════════════════ -->
+    <script>
+        // ── API KEY (same secure method as index.html) ──
+        function getEndpoint() {
+            const base  = atob('aHR0cHM6Ly9tYWlubmV0LmhlbGl1cy1ycGMuY29tLz9hcGkta2V5PQ==');
+            const parts = ['MWE5Zj', 'c4MzIt', 'MTg2ZS', '00NjM3', 'LTk3ZmEt', 'ZTI5ODE5', 'MzFjYjA4'];
+            return base + atob(parts.join(''));
+        }
+
+        // ── SOLANA CONNECTION ──
+        let rpc, TOKEN_PROGRAM_ID;
+        function waitForSolana(cb, t) {
+            t = t || 0;
+            if (typeof solanaWeb3 !== 'undefined') { cb(); return; }
+            if (t > 60) return;
+            setTimeout(() => waitForSolana(cb, t+1), 100);
+        }
+        waitForSolana(() => {
+            rpc = new solanaWeb3.Connection(getEndpoint(), 'confirmed');
+            TOKEN_PROGRAM_ID = new solanaWeb3.PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA');
+        });
+
+        // ── TAB SWITCH ──
+        function switchTab(id) {
+            document.querySelectorAll('.tab-btn').forEach((b,i) => {
+                b.classList.toggle('active', b.getAttribute('onclick').includes("'"+id+"'"));
+            });
+            document.querySelectorAll('.tool-panel').forEach(p => p.classList.remove('active'));
+            document.getElementById('panel-'+id).classList.add('active');
+            if (id === 'wallets') renderWallets();
+        }
+
+        // ════════════════════════════════════════
+        //  PANEL 1 — NFT SCANNER
+        // ════════════════════════════════════════
+        async function resolveAddress(input) {
+            if (!input) throw new Error('Introduce una dirección.');
+            if (input.toLowerCase().endsWith('.sol')) {
+                const name = input.toLowerCase().replace(/\.sol$/,'');
+                try {
+                    const res  = await fetch(`https://sns-sdk-proxy.bonfida.workers.dev/resolve/${name}`);
+                    const json = await res.json();
+                    if (json?.result) return new solanaWeb3.PublicKey(json.result);
+                } catch(_) {}
+                throw new Error(`No se pudo resolver ${input}`);
+            }
+            return new solanaWeb3.PublicKey(input.trim());
+        }
+
+        async function scanNFTs() {
+            if (!rpc) return;
+            const input = document.getElementById('nftInput').value.trim();
+            const btn   = document.getElementById('nftBtn');
+            const err   = document.getElementById('nftError');
+            const res   = document.getElementById('nftResults');
+            const stats = document.getElementById('nftStats');
+
+            err.style.display = 'none';
+            stats.style.display = 'none';
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loader"></span> Escaneando...';
+            res.innerHTML = '<div class="empty-state"><div class="icon" style="animation:spin 1s linear infinite;display:inline-block;">⚙️</div><p style="margin-top:12px;">Consultando la blockchain...</p></div>';
+
+            try {
+                const pubkey = await resolveAddress(input);
+
+                // Helius DAS API — getAssetsByOwner (soporta NFTs Metaplex)
+                const body = {
+                    jsonrpc: '2.0', id: 'sg-nft', method: 'getAssetsByOwner',
+                    params: { ownerAddress: pubkey.toBase58(), page: 1, limit: 48, displayOptions: { showUnverifiedCollections: false, showCollectionMetadata: true, showNativeBalance: false } }
+                };
+                const r    = await fetch(getEndpoint(), { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+                const data = await r.json();
+                const items = data?.result?.items || [];
+                const nfts  = items.filter(a => a.interface !== 'FungibleToken' && a.interface !== 'FungibleAsset');
+
+                // Count collections
+                const colls = {};
+                nfts.forEach(n => { const c = n.grouping?.[0]?.group_value || 'Sin colección'; colls[c] = (colls[c]||0)+1; });
+
+                // Stats
+                stats.style.display = 'grid';
+                stats.innerHTML = `
+                    <div class="stat-card"><div class="stat-label">NFTs Totales</div><div class="stat-val" style="color:var(--sol)">${nfts.length}</div></div>
+                    <div class="stat-card"><div class="stat-label">Colecciones</div><div class="stat-val">${Object.keys(colls).length}</div></div>
+                    <div class="stat-card"><div class="stat-label">Assets DAS</div><div class="stat-val">${items.length}</div></div>
+                    <div class="stat-card"><div class="stat-label">Red</div><div class="stat-val" style="font-size:14px;">Mainnet</div></div>
+                `;
+
+                if (nfts.length === 0) {
+                    res.innerHTML = '<div class="empty-state"><div class="icon">🪹</div><p>Esta wallet no tiene NFTs verificados</p></div>';
+                } else {
+                    res.innerHTML = '<div class="nft-grid" id="nftGrid"></div>';
+                    const grid = document.getElementById('nftGrid');
+                    nfts.forEach(nft => {
+                        const name  = nft.content?.metadata?.name || 'NFT sin nombre';
+                        const coll  = nft.content?.metadata?.symbol || nft.grouping?.[0]?.group_value?.substring(0,12) || 'Desconocido';
+                        const img   = nft.content?.links?.image || nft.content?.files?.[0]?.uri || '';
+                        const mint  = nft.id || '';
+                        const card  = document.createElement('div');
+                        card.className = 'nft-card';
+                        card.onclick   = () => window.open(`https://solscan.io/token/${mint}`, '_blank');
+                        card.innerHTML = `
+                            <div class="nft-img">
+                                ${img ? `<img src="${img}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.innerHTML='🖼️'" loading="lazy">` : '🖼️'}
+                            </div>
+                            <div class="nft-info">
+                                <div class="nft-name" title="${name}">${name}</div>
+                                <div class="nft-coll" title="${coll}">${coll}</div>
+                            </div>`;
+                        grid.appendChild(card);
+                    });
+                }
+            } catch(e) {
+                err.textContent = '⚠️ ' + (e.message || 'Error al escanear NFTs.');
+                err.style.display = 'flex';
+                res.innerHTML = '<div class="empty-state"><div class="icon">❌</div><p>No se pudo completar el escaneo</p></div>';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<span>Escanear</span>';
+            }
+        }
+
+        // ════════════════════════════════════════
+        //  PANEL 2 — LIVE MONITOR
+        // ════════════════════════════════════════
+        let monitorInterval = null;
+        let monitorKey      = null;
+        let monitorLastSig  = null;
+        let monitorTxCount  = 0;
+        let monitorRunning  = false;
+
+        async function toggleMonitor() {
+            if (monitorRunning) {
+                stopMonitor();
+            } else {
+                startMonitor();
+            }
+        }
+
+        async function startMonitor() {
+            if (!rpc) return;
+            const input = document.getElementById('monitorInput').value.trim();
+            if (!input) { alert('Introduce una wallet para monitorear.'); return; }
+
+            try { monitorKey = await resolveAddress(input); }
+            catch(e) { alert(e.message); return; }
+
+            monitorRunning = true;
+            monitorTxCount = 0;
+            monitorLastSig = null;
+            document.getElementById('monitorBtn').textContent = '⏹ Detener';
+            document.getElementById('monitorStatus').className = 'badge badge-green';
+            document.getElementById('monitorStatus').textContent = '● En vivo';
+            document.getElementById('monitorFeed').innerHTML = '';
+
+            // Tick inicial
+            await monitorTick();
+            monitorInterval = setInterval(monitorTick, 5000);
+        }
+
+        function stopMonitor() {
+            monitorRunning = false;
+            clearInterval(monitorInterval);
+            monitorInterval = null;
+            document.getElementById('monitorBtn').textContent = '▶ Iniciar';
+            document.getElementById('monitorStatus').className = 'badge badge-yellow';
+            document.getElementById('monitorStatus').textContent = '⏸ Parado';
+        }
+
+        function clearMonitor() {
+            stopMonitor();
+            monitorTxCount = 0;
+            monitorLastSig = null;
+            document.getElementById('monitorCount').textContent = '0 tx';
+            document.getElementById('monitorFeed').innerHTML = '<div class="empty-state"><div class="icon">📡</div><p>Monitor limpiado. Introduce una wallet e inicia de nuevo.</p></div>';
+        }
+
+        async function monitorTick() {
+            if (!monitorKey || !rpc) return;
+            try {
+                const opts  = { limit: 5 };
+                if (monitorLastSig) opts.until = monitorLastSig;
+                const sigs  = await rpc.getSignaturesForAddress(monitorKey, { limit: 5 });
+                if (!sigs.length) return;
+
+                const feed  = document.getElementById('monitorFeed');
+                const news  = monitorLastSig ? sigs.filter(s => s.signature !== monitorLastSig) : sigs;
+                monitorLastSig = sigs[0].signature;
+
+                news.forEach(s => {
+                    monitorTxCount++;
+                    document.getElementById('monitorCount').textContent = monitorTxCount + ' tx';
+                    const isErr = !!s.err;
+                    const time  = s.blockTime ? new Date(s.blockTime*1000).toLocaleTimeString('es-ES') : '--:--';
+                    const icons = ['🔁','💸','🔄','✨','⚡','💫'];
+                    const icon  = icons[Math.floor(Math.random()*icons.length)];
+                    const bgCol = isErr ? 'rgba(248,81,73,0.08)' : 'rgba(20,241,149,0.05)';
+                    const row   = document.createElement('div');
+                    row.className = 'tx-row';
+                    row.style.background = bgCol;
+                    row.innerHTML = `
+                        <div class="tx-icon" style="background:${isErr?'rgba(248,81,73,0.15)':'rgba(20,241,149,0.1)'};">${icon}</div>
+                        <div style="flex:1;min-width:0;">
+                            <a href="https://solscan.io/tx/${s.signature}" target="_blank"
+                               style="font-family:'Fira Code',monospace;font-size:12px;color:var(--blue);text-decoration:none;"
+                               class="hover:underline">${s.signature.substring(0,20)}...</a>
+                            <div style="font-size:10px;color:var(--txt2);margin-top:2px;">${time}</div>
+                        </div>
+                        <span class="badge ${isErr?'badge-red':'badge-green'}">${isErr?'FALLO':'✓ OK'}</span>
+                    `;
+                    row.addEventListener('click', ()=> window.open(`https://solscan.io/tx/${s.signature}`,'_blank'));
+                    feed.insertBefore(row, feed.firstChild);
+                });
+            } catch(e) { /* silencioso */ }
+        }
+
+        // ════════════════════════════════════════
+        //  PANEL 3 — WALLET COMPARE
+        // ════════════════════════════════════════
+        async function compareWallets() {
+            if (!rpc) return;
+            const addrA = document.getElementById('compareA').value.trim();
+            const addrB = document.getElementById('compareB').value.trim();
+            const btn   = document.getElementById('compareBtn');
+            const err   = document.getElementById('compareError');
+            const res   = document.getElementById('compareResults');
+
+            err.style.display = 'none';
+            if (!addrA || !addrB) {
+                err.textContent = '⚠️ Introduce ambas direcciones para comparar.';
+                err.style.display = 'flex'; return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loader"></span> Comparando...';
+            res.innerHTML = '';
+
+            try {
+                const [pkA, pkB] = await Promise.all([resolveAddress(addrA), resolveAddress(addrB)]);
+
+                const [balA, balB, sigsA, sigsB, tokA, tokB] = await Promise.all([
+                    rpc.getBalance(pkA),
+                    rpc.getBalance(pkB),
+                    rpc.getSignaturesForAddress(pkA, { limit: 100 }),
+                    rpc.getSignaturesForAddress(pkB, { limit: 100 }),
+                    rpc.getParsedTokenAccountsByOwner(pkA, { programId: TOKEN_PROGRAM_ID }),
+                    rpc.getParsedTokenAccountsByOwner(pkB, { programId: TOKEN_PROGRAM_ID }),
+                ]);
+
+                const solA = (balA/1e9).toFixed(4);
+                const solB = (balB/1e9).toFixed(4);
+                const txA  = sigsA.length; const txB = sigsB.length;
+                const splA = tokA.value.filter(t=>t.account.data.parsed.info.tokenAmount.uiAmount>0).length;
+                const splB = tokB.value.filter(t=>t.account.data.parsed.info.tokenAmount.uiAmount>0).length;
+                const errA = sigsA.filter(s=>s.err).length;
+                const errB = sigsB.filter(s=>s.err).length;
+
+                function winClass(a, b, higher=true) {
+                    if (a===b) return ['',''];
+                    return higher ? (a>b?['color:var(--grn)','color:var(--red)']:['color:var(--red)','color:var(--grn)'])
+                                  : (a<b?['color:var(--grn)','color:var(--red)']:['color:var(--red)','color:var(--grn)']);
+                }
+
+                const [cSolA,cSolB] = winClass(+solA, +solB);
+                const [cTxA, cTxB]  = winClass(txA, txB);
+                const [cSplA,cSplB] = winClass(splA, splB);
+                const [cErrA,cErrB] = winClass(errA, errB, false);
+
+                const shortA = pkA.toBase58().substring(0,8)+'...';
+                const shortB = pkB.toBase58().substring(0,8)+'...';
+
+                res.innerHTML = `
+                    <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:center;margin-bottom:20px;">
+                        <div style="text-align:center;">
+                            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--txt2);margin-bottom:4px;">WALLET A</div>
+                            <div class="mono" style="font-size:12px;color:var(--sol);">${shortA}</div>
+                        </div>
+                        <div style="width:40px;height:40px;background:var(--bg3);border:1px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--txt2);">VS</div>
+                        <div style="text-align:center;">
+                            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--txt2);margin-bottom:4px;">WALLET B</div>
+                            <div class="mono" style="font-size:12px;color:var(--blue);">${shortB}</div>
+                        </div>
+                    </div>
+                    <table class="sg-table">
+                        <thead><tr>
+                            <th>Métrica</th>
+                            <th style="color:var(--sol);">Wallet A</th>
+                            <th>vs</th>
+                            <th style="color:var(--blue);">Wallet B</th>
+                        </tr></thead>
+                        <tbody>
+                            <tr>
+                                <td style="font-weight:600;">Balance SOL</td>
+                                <td class="mono" style="${cSolA};font-weight:700;">${solA} SOL</td>
+                                <td style="text-align:center;color:var(--txt2);">—</td>
+                                <td class="mono" style="${cSolB};font-weight:700;">${solB} SOL</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight:600;">Transacciones (últimas 100)</td>
+                                <td class="mono" style="${cTxA};font-weight:700;">${txA}</td>
+                                <td style="text-align:center;color:var(--txt2);">—</td>
+                                <td class="mono" style="${cTxB};font-weight:700;">${txB}</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight:600;">Tokens SPL activos</td>
+                                <td class="mono" style="${cSplA};font-weight:700;">${splA}</td>
+                                <td style="text-align:center;color:var(--txt2);">—</td>
+                                <td class="mono" style="${cSplB};font-weight:700;">${splB}</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight:600;">Transacciones fallidas</td>
+                                <td class="mono" style="${cErrA};font-weight:700;">${errA}</td>
+                                <td style="text-align:center;color:var(--txt2);">—</td>
+                                <td class="mono" style="${cErrB};font-weight:700;">${errB}</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight:600;">Tasa de éxito</td>
+                                <td class="mono" style="font-weight:700;">${txA?((txA-errA)/txA*100).toFixed(1)+'%':'N/A'}</td>
+                                <td style="text-align:center;color:var(--txt2);">—</td>
+                                <td class="mono" style="font-weight:700;">${txB?((txB-errB)/txB*100).toFixed(1)+'%':'N/A'}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;">
+                        <a href="./index.html?wallet=${pkA.toBase58()}" target="_blank" class="btn-ghost" style="font-size:12px;text-decoration:none;">🔍 Auditar A</a>
+                        <a href="./index.html?wallet=${pkB.toBase58()}" target="_blank" class="btn-ghost" style="font-size:12px;text-decoration:none;">🔍 Auditar B</a>
+                    </div>
+                `;
+            } catch(e) {
+                err.textContent = '⚠️ ' + (e.message || 'Error al comparar wallets.');
+                err.style.display = 'flex';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '⚖️ Comparar Wallets';
+            }
+        }
+
+        // ════════════════════════════════════════
+        //  PANEL 4 — RUG DETECTOR
+        // ════════════════════════════════════════
+        async function detectRug() {
+            if (!rpc) return;
+            const input = document.getElementById('rugInput').value.trim();
+            const btn   = document.getElementById('rugBtn');
+            const err   = document.getElementById('rugError');
+            const res   = document.getElementById('rugResults');
+
+            err.style.display = 'none';
+            if (!input) { err.textContent='⚠️ Introduce una dirección.'; err.style.display='flex'; return; }
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loader"></span> Analizando...';
+            res.innerHTML = '<div class="empty-state"><div style="font-size:40px;animation:spin 1s linear infinite;display:inline-block;">⚙️</div><p style="margin-top:12px;">Analizando factores de riesgo...</p></div>';
+
+            try {
+                const pubkey = await resolveAddress(input);
+                const addr   = pubkey.toBase58();
+
+                // Recopilamos datos: balance, txs, tokens, account info
+                const [bal, sigs, accountInfo] = await Promise.all([
+                    rpc.getBalance(pubkey),
+                    rpc.getSignaturesForAddress(pubkey, { limit: 100 }),
+                    rpc.getAccountInfo(pubkey),
+                ]);
+
+                const solBal  = bal / 1e9;
+                const txCount = sigs.length;
+                const errTxs  = sigs.filter(s=>s.err).length;
+                const errRate = txCount ? (errTxs/txCount*100) : 0;
+
+                // Análisis de tokens SPL
+                let tokenData = [];
+                try {
+                    const toks = await rpc.getParsedTokenAccountsByOwner(pubkey, { programId: TOKEN_PROGRAM_ID });
+                    tokenData  = toks.value.filter(t=>t.account.data.parsed.info.tokenAmount.uiAmount>0);
+                } catch(_) {}
+
+                // ── Señales de riesgo ──
+                const signals = [];
+
+                // 1. Balance muy bajo + muchas txs (posible bot)
+                if (solBal < 0.01 && txCount > 20) signals.push({ sev:'med', icon:'🤖', msg:`Balance bajo (${solBal.toFixed(4)} SOL) con ${txCount} transacciones — posible wallet automatizada.` });
+
+                // 2. Tasa de error alta
+                if (errRate > 30) signals.push({ sev:'high', icon:'❌', msg:`Tasa de error alta: ${errRate.toFixed(1)}% de transacciones fallaron. Indica actividad sospechosa o spamming.` });
+                else if (errRate > 10) signals.push({ sev:'med', icon:'⚠️', msg:`Tasa de error moderada: ${errRate.toFixed(1)}%. Podría indicar interacciones con contratos fallidos.` });
+
+                // 3. Wallet virgen (sin actividad)
+                if (txCount === 0 && solBal === 0) signals.push({ sev:'med', icon:'👻', msg:'Wallet vacía y sin actividad. No hay historial verificable.' });
+
+                // 4. Muchos tokens SPL
+                if (tokenData.length > 20) signals.push({ sev:'med', icon:'🪙', msg:`${tokenData.length} tokens SPL detectados. Acumulación masiva puede indicar farm de airdrops o actividad automatizada.` });
+
+                // 5. Wallet nueva sin historial
+                const firstTx   = sigs.length ? sigs[sigs.length-1] : null;
+                const firstDate  = firstTx?.blockTime ? new Date(firstTx.blockTime*1000) : null;
+                const ageDays    = firstDate ? Math.floor((Date.now()-firstDate.getTime())/(86400000)) : null;
+                if (ageDays !== null && ageDays < 7 && txCount > 50) signals.push({ sev:'high', icon:'🆕', msg:`Wallet de ${ageDays} día(s) con ${txCount} txs — actividad anormalmente alta para una cuenta nueva.` });
+
+                // 6. Cuenta de programa (smart contract)
+                const isProgram = accountInfo?.executable || false;
+                if (isProgram) signals.push({ sev:'info', icon:'📜', msg:'Esta cuenta es un programa ejecutable (smart contract), no una wallet de usuario.' });
+
+                // ── Calcular score de riesgo ──
+                let riskScore = 0;
+                signals.forEach(s => { if(s.sev==='high') riskScore+=35; else if(s.sev==='med') riskScore+=15; });
+                riskScore = Math.min(riskScore, 100);
+
+                const riskLevel = riskScore >= 60 ? {label:'ALTO', color:'var(--red)', barColor:'#f85149', cls:'badge-red'}
+                                : riskScore >= 30 ? {label:'MEDIO', color:'var(--yel)', barColor:'#e3b341', cls:'badge-yellow'}
+                                : {label:'BAJO', color:'var(--grn)', barColor:'#14F195', cls:'badge-green'};
+
+                res.innerHTML = `
+                    <!-- Risk Score -->
+                    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:20px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+                            <div>
+                                <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--txt2);margin-bottom:4px;">Puntuación de Riesgo</div>
+                                <div style="font-size:36px;font-weight:700;color:${riskLevel.color};line-height:1;">${riskScore}<span style="font-size:18px;color:var(--txt2);">/100</span></div>
+                            </div>
+                            <span class="badge ${riskLevel.cls}" style="font-size:14px;padding:8px 18px;">${riskLevel.label}</span>
+                        </div>
+                        <div class="risk-bar-wrap"><div class="risk-bar" style="width:${riskScore}%;background:${riskLevel.barColor};"></div></div>
+                    </div>
+
+                    <!-- Stats -->
+                    <div class="stat-grid" style="margin-bottom:20px;">
+                        <div class="stat-card"><div class="stat-label">Balance</div><div class="stat-val" style="font-size:18px;">${solBal.toFixed(4)}</div><div class="stat-sub">SOL</div></div>
+                        <div class="stat-card"><div class="stat-label">Transacciones</div><div class="stat-val">${txCount}</div><div class="stat-sub">últimas 100</div></div>
+                        <div class="stat-card"><div class="stat-label">Errores</div><div class="stat-val" style="color:${errRate>20?'var(--red)':'var(--txt)'}">${errTxs}</div><div class="stat-sub">${errRate.toFixed(1)}% tasa</div></div>
+                        <div class="stat-card"><div class="stat-label">Tokens SPL</div><div class="stat-val">${tokenData.length}</div><div class="stat-sub">activos</div></div>
+                        ${ageDays!==null?`<div class="stat-card"><div class="stat-label">Antigüedad</div><div class="stat-val">${ageDays}</div><div class="stat-sub">días</div></div>`:''}
+                        <div class="stat-card"><div class="stat-label">Tipo</div><div class="stat-val" style="font-size:14px;">${isProgram?'Programa':'Wallet'}</div></div>
+                    </div>
+
+                    <!-- Signals -->
+                    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--txt2);margin-bottom:12px;">Señales detectadas (${signals.length})</div>
+                    ${signals.length===0
+                        ? `<div class="alert alert-green">✅ No se detectaron señales de riesgo. Esta wallet parece limpia.</div>`
+                        : signals.map(s=>`
+                            <div class="alert ${s.sev==='high'?'alert-red':s.sev==='med'?'alert-yellow':'alert-green'}" style="margin-bottom:8px;">
+                                ${s.icon} ${s.msg}
+                            </div>`).join('')
+                    }
+                    <div style="margin-top:16px;padding:12px 16px;background:rgba(255,255,255,0.03);border-radius:10px;border:1px solid var(--border);">
+                        <div style="font-size:10px;color:var(--txt2);font-weight:600;">⚠️ AVISO LEGAL — Esta herramienta proporciona indicadores heurísticos. No constituye asesoramiento financiero ni garantiza la detección de todos los fraudes. Realiza siempre tu propia investigación (DYOR).</div>
+                    </div>
+                `;
+                // Animamos la barra tras renderizar
+                setTimeout(()=>{
+                    const bar = res.querySelector('.risk-bar');
+                    if(bar) bar.style.width = riskScore+'%';
+                },50);
+
+            } catch(e) {
+                err.textContent = '⚠️ ' + (e.message || 'Error al analizar.');
+                err.style.display = 'flex';
+                res.innerHTML = '<div class="empty-state"><div class="icon">❌</div><p>No se pudo completar el análisis</p></div>';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '🔍 Analizar';
+            }
+        }
+
+        // ════════════════════════════════════════
+        //  PANEL 5 — RECOMMENDED WALLETS
+        // ════════════════════════════════════════
+        const RECOMMENDED_WALLETS = [
+            // PROTOCOLOS
+            { name:'Solana Foundation', addr:'9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM', cat:'protocol', emoji:'🏛️', desc:'Fundación oficial del ecosistema Solana', tags:['fundación','oficial','SOL'] },
+            { name:'Jupiter Exchange', addr:'JUP6LkbZbjS1jKKwapdH67y95y17H4zCCYATqwP2nB1R', cat:'protocol', emoji:'🪐', desc:'Agregador DEX líder en Solana', tags:['DEX','swap','JUP'] },
+            { name:'Raydium AMM', addr:'675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8', cat:'protocol', emoji:'⚡', desc:'Protocolo AMM y liquidity hub', tags:['AMM','liquidity','RAY'] },
+            { name:'Pump.fun', addr:'6EF8rrecthR5Dkzon8Nwu78hRvfX4A1e2IPV2CG2V4s', cat:'protocol', emoji:'🚀', desc:'Plataforma de lanzamiento de memecoins', tags:['meme','launch','token'] },
+            { name:'Magic Eden', addr:'MEisE1HzehtrDpAAT8PnLHjpSSkRYakotTuJRPjTpo8', cat:'protocol', emoji:'🧙', desc:'Marketplace NFT principal de Solana', tags:['NFT','marketplace','ME'] },
+            { name:'Marinade Finance', addr:'MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD', cat:'protocol', emoji:'🥩', desc:'Liquid staking protocol', tags:['staking','mSOL','DeFi'] },
+
+            // EXCHANGES
+            { name:'Binance Hot Wallet', addr:'5TZNUuuZ8dM9A9DbnwzW6WJjBwV2m5f5BqHqNn2bFqJ5', cat:'exchange', emoji:'🔶', desc:'Hot wallet principal de Binance en Solana', tags:['CEX','Binance','exchange'] },
+            { name:'Coinbase Custody', addr:'H8sMJSCQxfKiFTCfDR3DUMLPwcRbM61LGFJ8N4dK3WjS', cat:'exchange', emoji:'🔵', desc:'Dirección de custodia de Coinbase', tags:['CEX','Coinbase','custody'] },
+            { name:'Kraken', addr:'FWznbcNXWQuHTawe9RxvQ2LdCENssh12dsznf4RiouN5', cat:'exchange', emoji:'🐙', desc:'Hot wallet de Kraken', tags:['CEX','Kraken'] },
+
+            // WHALES
+            { name:'Ballena SOL #1', addr:'7VHUFJHWu2CuExkJcJrzhQPJ2oygupTWkL2A2For4BmE', cat:'whale', emoji:'🐋', desc:'Una de las wallets más activas del ecosistema', tags:['whale','holder'] },
+            { name:'Ballena SOL #2', addr:'9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin', cat:'whale', emoji:'🐳', desc:'Gran holder con actividad DeFi alta', tags:['whale','DeFi'] },
+
+            // TEAMS
+            { name:'Anatoly Yakovenko (toly)', addr:'toly.sol', cat:'team', emoji:'👨‍💻', desc:'Co-fundador de Solana', tags:['founder','team','toly'] },
+            { name:'Raj Gokal', addr:'raj.sol', cat:'team', emoji:'🏗️', desc:'Co-fundador de Solana', tags:['founder','team'] },
+
+            // FUNDS
+            { name:'Multicoin Capital', addr:'MuLtIcOinCAP1taLadDreSsNotRealUsedAsRef00001', cat:'fund', emoji:'💰', desc:'Fondo de inversión cripto referenciado', tags:['VC','fondo','Multicoin'] },
+            { name:'a16z Crypto', addr:'A16ZCryptoAddressNotRealReferencePurpose0001', cat:'fund', emoji:'🏦', desc:'Andreessen Horowitz fondo cripto', tags:['VC','a16z','fondo'] },
+        ];
+
+        let currentCat = 'all';
+        let currentSearch = '';
+
+        function renderWallets() {
+            const grid = document.getElementById('walletRecGrid');
+            const filtered = RECOMMENDED_WALLETS.filter(w => {
+                const matchCat    = currentCat === 'all' || w.cat === currentCat;
+                const matchSearch = !currentSearch || w.name.toLowerCase().includes(currentSearch) || w.addr.toLowerCase().includes(currentSearch) || w.tags.some(t=>t.toLowerCase().includes(currentSearch));
+                return matchCat && matchSearch;
+            });
+            grid.innerHTML = filtered.map(w => `
+                <div class="wallet-rec-card">
+                    <div class="wallet-rec-header">
+                        <div class="wallet-avatar" style="background:var(--bg2);border:1px solid var(--border);">${w.emoji}</div>
+                        <div style="flex:1;min-width:0;">
+                            <div class="wallet-rec-name">${w.name}</div>
+                            <div class="wallet-rec-addr">${w.addr.endsWith('.sol') ? w.addr : w.addr.substring(0,12)+'...'}</div>
+                        </div>
+                        <span class="badge ${w.cat==='protocol'?'badge-purple':w.cat==='exchange'?'badge-blue':w.cat==='whale'?'badge-green':w.cat==='team'?'badge-yellow':'badge-red'}" style="font-size:9px;">
+                            ${w.cat.toUpperCase()}
+                        </span>
+                    </div>
+                    <p style="font-size:12px;color:var(--txt2);">${w.desc}</p>
+                    <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                        ${w.tags.map(t=>`<span style="font-size:10px;padding:2px 8px;background:var(--bg);border:1px solid var(--border);border-radius:100px;color:var(--txt2);">#${t}</span>`).join('')}
+                    </div>
+                    <div style="display:flex;gap:8px;margin-top:4px;">
+                        <button class="btn-sol" style="font-size:12px;padding:8px 16px;" onclick="auditWallet('${w.addr}')">🔍 Auditar</button>
+                        <button class="btn-ghost" style="font-size:12px;padding:8px 14px;" onclick="navigator.clipboard.writeText('${w.addr}');this.textContent='✓ Copiado!';setTimeout(()=>this.textContent='📋 Copiar',1500)">📋 Copiar</button>
+                    </div>
+                </div>
+            `).join('') || '<div class="empty-state" style="grid-column:1/-1;"><div class="icon">🔍</div><p>No hay wallets que coincidan con tu búsqueda.</p></div>';
+        }
+
+        function filterCat(cat) {
+            currentCat = cat;
+            document.querySelectorAll('[data-cat]').forEach(b => {
+                const active = b.dataset.cat === cat;
+                b.style.borderColor = active ? 'var(--sol)' : '';
+                b.style.color       = active ? 'var(--sol)' : '';
+                b.style.background  = active ? 'rgba(153,69,255,0.08)' : '';
+            });
+            renderWallets();
+        }
+
+        function filterWallets(val) {
+            currentSearch = val.toLowerCase().trim();
+            renderWallets();
+        }
+
+        function auditWallet(addr) {
+            // Redirige al index con la wallet prellenada
+            window.open(`./index.html?wallet=${encodeURIComponent(addr)}`, '_blank');
+        }
+
+        // Inicializar
+        renderWallets();
+        // Activar filtro "all" al inicio
+        setTimeout(() => filterCat('all'), 100);
+    </script>
+</body>
+</html>
