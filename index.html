@@ -83,6 +83,13 @@
             <span class="text-xl font-extrabold tracking-tight text-slate-900">Solana<span class="text-[#9945FF]">Guard</span></span>
         </div>
         <div class="flex items-center gap-4">
+            <!-- Nav links -->
+            <div class="hidden md:flex items-center gap-1 bg-slate-100 rounded-xl p-1 border border-slate-200">
+                <a href="./index.html" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-white shadow-sm text-slate-900 font-bold text-xs border border-slate-200">🔍 Buscador</a>
+                <a href="./tools.html" class="flex items-center gap-2 px-4 py-2 rounded-lg text-slate-600 hover:bg-white hover:shadow-sm font-semibold text-xs transition-all">⚡ Herramientas</a>
+            </div>
+            <!-- Mobile tools link -->
+            <a href="./tools.html" class="md:hidden px-3 py-2 bg-[#9945FF] text-white rounded-lg text-xs font-bold">⚡ Tools</a>
             <div id="langSelectorWrapper">
                 <div class="lang-trigger" id="langTrigger" onclick="toggleLang()">
                     <span class="flag" id="curFlag">🇪🇸</span>
@@ -277,6 +284,15 @@
                 const saved = localStorage.getItem('sgLang');
                 if (saved) { const [lang,flag,name]=saved.split('|'); setTimeout(()=>pickLang(lang,flag,name),800); }
                 else { const sl=(navigator.language||'').split('-')[0]; const auto={en:['en','🇺🇸','English'],fr:['fr','🇫🇷','Français'],pt:['pt','🇧🇷','Português'],de:['de','🇩🇪','Deutsch'],it:['it','🇮🇹','Italiano'],ru:['ru','🇷🇺','Русский'],ar:['ar','🇸🇦','العربية'],ja:['ja','🇯🇵','日本語'],zh:['zh-CN','🇨🇳','中文']}; if(auto[sl]) setTimeout(()=>pickLang(...auto[sl]),800); }
+            } catch(e) {}
+            // ── Auto-audit desde URL param: index.html?wallet=ADDR ──
+            try {
+                const params = new URLSearchParams(window.location.search);
+                const w = params.get('wallet');
+                if (w) {
+                    document.getElementById('walletInput').value = decodeURIComponent(w);
+                    setTimeout(initAudit, 900);
+                }
             } catch(e) {}
         });
     </script>
