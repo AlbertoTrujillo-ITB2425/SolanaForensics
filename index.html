@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -18,58 +18,278 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:creator" content="@AlbertoTrujillo">
     <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Solana Guard","url":"https://solanaguard.app","description":"Herramienta OSINT avanzada para el rastreo y auditoría de carteras en Solana.","applicationCategory":"FinanceApplication","author":{"@type":"Person","name":"AlbertoTrujillo"},"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
-
     <link rel="icon" type="image/png" href="./assets/logo_solana.png">
     <link rel="apple-touch-icon" href="./assets/logo_solana.png">
-
+    <script>
+        // Apply theme BEFORE paint to avoid flash
+        (function(){
+            try {
+                const t = localStorage.getItem('sgTheme') || 'light';
+                document.documentElement.setAttribute('data-theme', t);
+            } catch(e) {}
+        })();
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.95.3/lib/index.iife.min.js"
             onerror="var s=document.createElement('script');s.src='https://unpkg.com/@solana/web3.js@1.95.3/lib/index.iife.min.js';document.head.appendChild(s)"></script>
-
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=JetBrains+Mono:wght@400;700&display=swap');
 
-        body { top: 0px !important; position: static !important; font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #0f172a; margin: 0; overflow-x: hidden; }
-        .goog-te-banner-frame, iframe.goog-te-banner-frame, .goog-te-balloon-frame, #goog-gt-tt, .goog-tooltip, .VIpgJd-ZVi9od-ORHb-OEVmcd, .VIpgJd-ZVi9od-aZ2wEe-wOHMyf, .VIpgJd-ZVi9od-aZ2wEe { display: none !important; visibility: hidden !important; }
-        .goog-text-highlight { background: none !important; box-shadow: none !important; border: none !important; }
-        .skiptranslate { display: none !important; }
-        #langSelectorWrapper { display: flex !important; }
+        /* ══ RESET GOOGLE TRANSLATE ══ */
+        body { top:0px!important; position:static!important; }
+        .goog-te-banner-frame,iframe.goog-te-banner-frame,.goog-te-balloon-frame,#goog-gt-tt,.goog-tooltip,.VIpgJd-ZVi9od-ORHb-OEVmcd,.VIpgJd-ZVi9od-aZ2wEe-wOHMyf,.VIpgJd-ZVi9od-aZ2wEe{display:none!important;visibility:hidden!important;}
+        .goog-text-highlight{background:none!important;box-shadow:none!important;border:none!important;}
+        .skiptranslate{display:none!important;}
+        #langSelectorWrapper{display:flex!important;}
 
-        .bg-infrastructure { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; background-color: #f8fafc; background-image: radial-gradient(#cbd5e1 1px, transparent 1px); background-size: 32px 32px; opacity: 0.5; }
-        .glass-panel { background: rgba(255,255,255,0.85); border: 1px solid rgba(0,0,0,0.05); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); border-radius: 1rem; }
+        /* ══ THEME TOKENS ══ */
+        :root, [data-theme="light"] {
+            --bg:        #f8fafc;
+            --bg2:       #ffffff;
+            --bg3:       #f1f5f9;
+            --bdr:       #e2e8f0;
+            --bdr2:      rgba(0,0,0,0.05);
+            --txt:       #0f172a;
+            --txt2:      #64748b;
+            --txt3:      #94a3b8;
+            --nav-bg:    rgba(255,255,255,0.85);
+            --glass-bg:  rgba(255,255,255,0.85);
+            --glass-sh:  0 10px 25px -5px rgba(0,0,0,0.08);
+            --dot-color: #cbd5e1;
+            --tbl-head:  #f1f5f9;
+            --tbl-body:  #f8fafc;
+            --tbl-row:   rgba(0,0,0,0.02);
+            --inp-bg:    #ffffff;
+            --btn-bg:    #0f172a;
+            --btn-hover: #1e293b;
+            --tag-bg:    #e2e8f0;
+            --tag-txt:   #475569;
+            --tag-hover: #cbd5e1;
+            --err-bg:    #fef2f2;
+            --err-bdr:   #fecaca;
+            --err-txt:   #b91c1c;
+            --feat-ico-bg: #eff6ff;
+            --feat-ico-c:  #2563eb;
+            --feat2-ico-bg:#f0fdf4;
+            --feat2-ico-c: #16a34a;
+            --feat3-ico-bg:#faf5ff;
+            --feat3-ico-c: #7c3aed;
+            --sol:       #9945FF;
+            --grn:       #14F195;
+            --transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        [data-theme="dark"] {
+            --bg:        #0d1117;
+            --bg2:       #161b22;
+            --bg3:       #21262d;
+            --bdr:       #30363d;
+            --bdr2:      rgba(255,255,255,0.06);
+            --txt:       #e6edf3;
+            --txt2:      #8b949e;
+            --txt3:      #6e7681;
+            --nav-bg:    rgba(13,17,23,0.9);
+            --glass-bg:  rgba(22,27,34,0.9);
+            --glass-sh:  0 10px 25px -5px rgba(0,0,0,0.4);
+            --dot-color: #21262d;
+            --tbl-head:  #21262d;
+            --tbl-body:  rgba(13,17,23,0.5);
+            --tbl-row:   rgba(255,255,255,0.025);
+            --inp-bg:    #21262d;
+            --btn-bg:    #9945FF;
+            --btn-hover: #7c3aed;
+            --tag-bg:    #21262d;
+            --tag-txt:   #8b949e;
+            --tag-hover: #30363d;
+            --err-bg:    rgba(248,81,73,0.1);
+            --err-bdr:   rgba(248,81,73,0.3);
+            --err-txt:   #f85149;
+            --feat-ico-bg: rgba(88,166,255,0.12);
+            --feat-ico-c:  #58a6ff;
+            --feat2-ico-bg:rgba(20,241,149,0.1);
+            --feat2-ico-c: #14F195;
+            --feat3-ico-bg:rgba(153,69,255,0.12);
+            --feat3-ico-c: #9945FF;
+            --sol:       #9945FF;
+            --grn:       #14F195;
+        }
+
+        /* ══ BASE ══ */
+        *, *::before, *::after { box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--txt);
+            margin: 0; overflow-x: hidden;
+            transition: var(--transition);
+        }
         .mono { font-family: 'JetBrains Mono', monospace; }
-        .btn-primary { background: #0f172a; color: #fff; transition: all 0.2s ease; }
-        .btn-primary:hover:not(:disabled) { transform: translateY(-2px); background: #1e293b; box-shadow: 0 10px 20px -5px rgba(15,23,42,0.3); }
-        .btn-primary:disabled { background: #cbd5e1; color: #64748b; cursor: not-allowed; transform: none; box-shadow: none; }
-        .loader { border: 2px solid rgba(255,255,255,0.3); border-left-color: #fff; border-radius: 50%; width: 16px; height: 16px; animation: spin 0.8s linear infinite; display: inline-block; vertical-align: middle; margin-right: 8px; }
-        @keyframes spin { 0%{transform:rotate(0deg)} 100%{transform:rotate(360deg)} }
-        .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+
+        /* ══ BACKGROUND DOTS ══ */
+        .bg-infrastructure {
+            position: fixed; top:0; left:0; width:100vw; height:100vh; z-index:-1;
+            background-color: var(--bg);
+            background-image: radial-gradient(var(--dot-color) 1px, transparent 1px);
+            background-size: 32px 32px;
+            opacity: 0.6;
+            transition: var(--transition);
+        }
+        [data-theme="dark"] .bg-infrastructure { opacity: 1; }
+
+        /* ══ GLASS PANEL ══ */
+        .glass-panel {
+            background: var(--glass-bg);
+            border: 1px solid var(--bdr2);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            box-shadow: var(--glass-sh);
+            border-radius: 1rem;
+            transition: var(--transition);
+        }
+
+        /* ══ NAVBAR ══ */
+        nav {
+            background: var(--nav-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--bdr);
+            transition: var(--transition);
+        }
+        [data-theme="dark"] nav { border-color: var(--bdr); }
+
+        /* ══ THEME TOGGLE BUTTON ══ */
+        .theme-toggle {
+            position: relative;
+            width: 52px; height: 28px;
+            border-radius: 100px;
+            border: 1.5px solid var(--bdr);
+            background: var(--bg3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+            outline: none;
+        }
+        .theme-toggle:hover { border-color: var(--sol); box-shadow: 0 0 0 3px rgba(153,69,255,0.15); }
+        .theme-toggle .knob {
+            position: absolute;
+            top: 3px; left: 3px;
+            width: 20px; height: 20px;
+            border-radius: 50%;
+            background: var(--sol);
+            transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 11px; line-height: 1;
+        }
+        [data-theme="dark"] .theme-toggle .knob { transform: translateX(24px); }
+        .theme-toggle .icon-sun  { position:absolute; right:5px; font-size:11px; opacity:0.5; top:50%; transform:translateY(-50%); }
+        .theme-toggle .icon-moon { position:absolute; left:5px; font-size:11px; opacity:0.5; top:50%; transform:translateY(-50%); }
+        [data-theme="dark"] .theme-toggle .icon-sun  { opacity:0.7; }
+        [data-theme="dark"] .theme-toggle .icon-moon { opacity:0.3; }
+
+        /* ══ BUTTONS ══ */
+        .btn-primary {
+            background: var(--btn-bg);
+            color: #fff;
+            transition: all 0.2s ease;
+            border: none;
+        }
+        .btn-primary:hover:not(:disabled) { transform: translateY(-2px); background: var(--btn-hover); box-shadow: 0 10px 20px -5px rgba(153,69,255,0.3); }
+        .btn-primary:disabled { background: var(--bdr); color: var(--txt2); cursor: not-allowed; transform: none; box-shadow: none; }
+        [data-theme="dark"] .btn-primary:hover:not(:disabled) { box-shadow: 0 10px 20px -5px rgba(153,69,255,0.4); }
+
+        /* ══ INPUT ══ */
+        input[type="text"], input:not([type]) {
+            background: var(--inp-bg);
+            color: var(--txt);
+            border-color: var(--bdr);
+            transition: var(--transition);
+        }
+        input::placeholder { color: var(--txt3); }
+
+        /* ══ LOADER ══ */
+        .loader { border:2px solid rgba(255,255,255,0.3); border-left-color:#fff; border-radius:50%; width:16px; height:16px; animation:spin .8s linear infinite; display:inline-block; vertical-align:middle; margin-right:8px; }
+        @keyframes spin { to{transform:rotate(360deg)} }
+        .animate-fade-in { animation: fadeIn .3s ease-out forwards; }
         @keyframes fadeIn { from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:translateY(0)} }
 
-        /* ── SNS badge ── */
-        .sns-badge { display:inline-flex; align-items:center; gap:5px; padding:3px 10px; background:linear-gradient(135deg,#9945FF22,#14F19522); border:1px solid #9945FF44; border-radius:100px; font-size:11px; font-weight:700; color:#7c3aed; font-family:'JetBrains Mono',monospace; }
-        .sns-resolved { padding:8px 14px; background:#f5f0ff; border:1px solid #9945FF33; border-radius:10px; font-size:11px; color:#5b21b6; font-family:'JetBrains Mono',monospace; word-break:break-all; }
-        .sns-resolved strong { color:#7c3aed; }
+        /* ══ TABLES ══ */
+        .tbl-head-row { background: var(--tbl-head); transition: var(--transition); }
+        .tbl-body-bg  { background: var(--tbl-body); transition: var(--transition); }
+        .tbl-row-hover:hover { background: var(--tbl-row) !important; }
 
-        /* ── LANGUAGE SELECTOR ── */
+        /* ══ NAV LINKS ══ */
+        .nav-link-active {
+            background: var(--bg2);
+            color: var(--txt);
+            border: 1px solid var(--bdr);
+        }
+        .nav-link-wrap {
+            background: var(--bg3);
+            border: 1px solid var(--bdr);
+            transition: var(--transition);
+        }
+
+        /* ══ TAGS / QUICK WALLETS ══ */
+        .quick-tag {
+            background: var(--tag-bg);
+            color: var(--tag-txt);
+            transition: background 0.15s;
+        }
+        .quick-tag:hover { background: var(--tag-hover); }
+
+        /* ══ SNS BADGE ══ */
+        .sns-badge { display:inline-flex; align-items:center; gap:5px; padding:3px 10px; background:linear-gradient(135deg,rgba(153,69,255,.15),rgba(20,241,149,.12)); border:1px solid rgba(153,69,255,.35); border-radius:100px; font-size:11px; font-weight:700; color:var(--sol); font-family:'JetBrains Mono',monospace; }
+        .sns-resolved { padding:8px 14px; background:rgba(153,69,255,.08); border:1px solid rgba(153,69,255,.2); border-radius:10px; font-size:11px; color:var(--sol); font-family:'JetBrains Mono',monospace; word-break:break-all; }
+
+        /* ══ CARD HEADERS (tables) ══ */
+        .card-header-bg { background: var(--bg2); transition: var(--transition); }
+        .card-panel { border: 1px solid var(--bdr); transition: var(--transition); }
+
+        /* ══ STAT CARDS ══ */
+        .stat-border-grn  { border-top: 4px solid var(--grn); }
+        .stat-border-sol  { border-top: 4px solid var(--sol); }
+        .stat-border-bdr  { border-top: 4px solid var(--bdr); }
+        .disp-id-box { background: var(--bg3); border: 1px solid var(--bdr); transition: var(--transition); }
+
+        /* ══ ERROR ALERT ══ */
+        .error-alert { background: var(--err-bg); border: 1px solid var(--err-bdr); color: var(--err-txt); }
+
+        /* ══ FOOTER ══ */
+        footer { border-top: 1px solid var(--bdr); transition: var(--transition); }
+
+        /* ══ FEATURE CARDS ICONS ══ */
+        .feat-ico-1 { background: var(--feat-ico-bg); color: var(--feat-ico-c); }
+        .feat-ico-2 { background: var(--feat2-ico-bg); color: var(--feat2-ico-c); }
+        .feat-ico-3 { background: var(--feat3-ico-bg); color: var(--feat3-ico-c); }
+
+        /* ══ RECENT TAG ══ */
+        .recent-tag { background: rgba(153,69,255,.1); color: var(--sol); }
+        .recent-tag:hover { background: rgba(153,69,255,.2); }
+
+        /* ══ LANGUAGE SELECTOR ══ */
         #langSelectorWrapper { position: relative; }
-        .lang-trigger { display: flex; align-items: center; gap: 7px; padding: 7px 14px; border-radius: 100px; background: #f1f5f9; border: 1.5px solid #e2e8f0; cursor: pointer; user-select: none; transition: all 0.18s ease; font-size: 13px; font-weight: 600; color: #334155; white-space: nowrap; }
-        .lang-trigger:hover { background: #e8edf5; border-color: #9945FF; box-shadow: 0 0 0 3px rgba(153,69,255,0.1); }
-        .lang-trigger .flag { font-size: 17px; line-height: 1; }
-        .lang-trigger .lname { display: none; }
-        @media(min-width:480px){ .lang-trigger .lname { display: inline; } }
-        .lang-trigger .chev { transition: transform 0.22s ease; color: #94a3b8; }
-        .lang-trigger.open .chev { transform: rotate(180deg); }
-        .lang-dropdown { position: absolute; top: calc(100% + 8px); right: 0; background: white; border: 1.5px solid #e2e8f0; border-radius: 14px; box-shadow: 0 20px 45px -8px rgba(0,0,0,0.18); min-width: 210px; z-index: 1000; overflow: hidden; opacity: 0; transform: translateY(-8px) scale(0.97); pointer-events: none; transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1); }
-        .lang-dropdown.open { opacity: 1; transform: translateY(0) scale(1); pointer-events: all; }
-        .grp-label { padding: 8px 14px 3px; font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; }
-        .lang-opt { display: flex; align-items: center; gap: 10px; padding: 9px 14px; font-size: 13px; font-weight: 600; color: #334155; cursor: pointer; transition: background 0.12s ease; }
-        .lang-opt:hover { background: #f8fafc; }
-        .lang-opt.active { background: #f5f0ff; color: #7c3aed; }
-        .lang-opt .flag { font-size: 18px; width: 22px; text-align: center; }
-        .lang-opt .code { font-size: 10px; font-weight: 700; color: #94a3b8; margin-left: auto; font-family:'JetBrains Mono',monospace; }
-        .lang-opt.active .code { color: #9945FF; }
-        .lang-divider { height: 1px; background: #f1f5f9; margin: 3px 0; }
+        .lang-trigger { display:flex; align-items:center; gap:7px; padding:6px 13px; border-radius:100px; background:var(--bg3); border:1.5px solid var(--bdr); cursor:pointer; user-select:none; transition:all .18s; font-size:13px; font-weight:600; color:var(--txt2); white-space:nowrap; }
+        .lang-trigger:hover { border-color:var(--sol); box-shadow:0 0 0 3px rgba(153,69,255,.12); }
+        .lang-trigger .flag { font-size:17px; line-height:1; }
+        .lang-trigger .lname { display:none; }
+        @media(min-width:480px){ .lang-trigger .lname { display:inline; } }
+        .lang-trigger .chev { transition:transform .22s; color:var(--txt3); }
+        .lang-trigger.open .chev { transform:rotate(180deg); }
+        .lang-dropdown { position:absolute; top:calc(100% + 8px); right:0; background:var(--bg2); border:1.5px solid var(--bdr); border-radius:14px; box-shadow:0 20px 45px -8px rgba(0,0,0,0.35); min-width:210px; z-index:1000; overflow:hidden; opacity:0; transform:translateY(-8px) scale(.97); pointer-events:none; transition:all .2s cubic-bezier(.34,1.56,.64,1); }
+        .lang-dropdown.open { opacity:1; transform:translateY(0) scale(1); pointer-events:all; }
+        .grp-label { padding:8px 14px 3px; font-size:10px; font-weight:700; color:var(--txt3); text-transform:uppercase; letter-spacing:.08em; }
+        .lang-opt { display:flex; align-items:center; gap:10px; padding:9px 14px; font-size:13px; font-weight:600; color:var(--txt2); cursor:pointer; transition:background .12s; }
+        .lang-opt:hover { background:var(--bg3); color:var(--txt); }
+        .lang-opt.active { background:rgba(153,69,255,.12); color:var(--sol); }
+        .lang-opt .flag { font-size:18px; width:22px; text-align:center; }
+        .lang-opt .code { font-size:10px; font-weight:700; color:var(--txt3); margin-left:auto; font-family:'JetBrains Mono',monospace; }
+        .lang-opt.active .code { color:var(--sol); }
+        .lang-divider { height:1px; background:var(--bdr); margin:3px 0; }
+
+        /* ══ SCROLLBAR ══ */
+        ::-webkit-scrollbar { width:6px; }
+        ::-webkit-scrollbar-track { background:transparent; }
+        ::-webkit-scrollbar-thumb { background:var(--bdr); border-radius:3px; }
     </style>
 </head>
 <body class="antialiased">
@@ -77,19 +297,21 @@
     <div class="bg-infrastructure"></div>
     <div id="google_translate_element" style="display:none;visibility:hidden;position:absolute;top:-9999px;left:-9999px;"></div>
 
-    <nav class="px-8 py-4 flex flex-col md:flex-row justify-between items-center border-b border-slate-200 bg-white/70 backdrop-blur-md sticky top-0 z-50 gap-4">
+    <!-- ══════════ NAVBAR ══════════ -->
+    <nav class="px-6 py-3 flex flex-col md:flex-row justify-between items-center sticky top-0 z-50 gap-3">
         <div class="flex items-center gap-3">
             <img src="./assets/logo_solana.png" alt="Solana Guard Logo" class="w-8 h-8 object-contain">
-            <span class="text-xl font-extrabold tracking-tight text-slate-900">Solana<span class="text-[#9945FF]">Guard</span></span>
+            <span class="text-xl font-extrabold tracking-tight" style="color:var(--txt);">Solana<span style="color:#9945FF;">Guard</span></span>
         </div>
-        <div class="flex items-center gap-4">
+        <div class="flex items-center gap-3 flex-wrap justify-center">
             <!-- Nav links -->
-            <div class="hidden md:flex items-center gap-1 bg-slate-100 rounded-xl p-1 border border-slate-200">
-                <a href="./index.html" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-white shadow-sm text-slate-900 font-bold text-xs border border-slate-200">🔍 Buscador</a>
-                <a href="./tools.html" class="flex items-center gap-2 px-4 py-2 rounded-lg text-slate-600 hover:bg-white hover:shadow-sm font-semibold text-xs transition-all">⚡ Herramientas</a>
+            <div class="hidden md:flex items-center gap-1 rounded-xl p-1 nav-link-wrap">
+                <a href="./index.html" class="flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-xs nav-link-active" style="text-decoration:none;">🔍 Buscador</a>
+                <a href="./tools.html" class="flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-xs transition-all" style="color:var(--txt2);text-decoration:none;">⚡ Herramientas</a>
             </div>
-            <!-- Mobile tools link -->
-            <a href="./tools.html" class="md:hidden px-3 py-2 bg-[#9945FF] text-white rounded-lg text-xs font-bold">⚡ Tools</a>
+            <a href="./tools.html" class="md:hidden px-3 py-2 rounded-lg text-xs font-bold text-white" style="background:#9945FF;text-decoration:none;">⚡ Tools</a>
+
+            <!-- Language Selector -->
             <div id="langSelectorWrapper">
                 <div class="lang-trigger" id="langTrigger" onclick="toggleLang()">
                     <span class="flag" id="curFlag">🇪🇸</span>
@@ -113,28 +335,44 @@
                     <div style="height:5px"></div>
                 </div>
             </div>
-            <div class="hidden md:flex items-center gap-2 px-3 py-1 bg-green-50 text-green-700 border border-green-200 rounded-full text-xs font-bold tracking-widest uppercase">
-                <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_4px_#14f195]"></span> Nodo Helius
+
+            <!-- Theme Toggle -->
+            <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Cambiar tema claro/oscuro" aria-label="Toggle theme">
+                <span class="icon-moon">🌙</span>
+                <span class="icon-sun">☀️</span>
+                <span class="knob">
+                    <svg id="themeIcon" style="width:12px;height:12px;fill:white;" viewBox="0 0 24 24">
+                        <path d="M12 3v1m0 16v1M4.22 4.22l.707.707m12.73 12.73.707.707M3 12h1m16 0h1M4.22 19.78l.707-.707m12.73-12.73.707-.707M12 7a5 5 0 100 10A5 5 0 0012 7z"/>
+                    </svg>
+                </span>
+            </button>
+
+            <!-- Helius badge -->
+            <div class="hidden md:flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold tracking-widest uppercase" style="background:rgba(20,241,149,.1);color:#3fb950;border:1px solid rgba(20,241,149,.2);">
+                <span class="w-2 h-2 bg-green-500 rounded-full" style="animation:pulse 2s infinite;box-shadow:0 0 4px #14f195;"></span> Helius
             </div>
         </div>
     </nav>
 
+    <!-- ══════════ MAIN ══════════ -->
     <main class="max-w-6xl mx-auto px-6 py-12">
         <div class="mb-10 text-center">
-            <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight leading-tight mb-4 text-slate-900">
+            <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight leading-tight mb-4" style="color:var(--txt);">
                 Inteligencia de <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#9945FF] to-[#14F195]">Cadena de Bloques</span>
             </h1>
-            <p class="text-slate-600 max-w-2xl mx-auto font-medium text-lg">
+            <p class="max-w-2xl mx-auto font-medium text-lg" style="color:var(--txt2);">
                 Herramienta OSINT avanzada para el rastreo y auditoría de carteras.
             </p>
         </div>
 
+        <!-- Search -->
         <div class="max-w-4xl mx-auto mb-8">
             <div class="glass-panel p-2">
                 <div class="flex flex-col md:flex-row gap-2">
                     <input id="walletInput" type="text"
                         placeholder="Pega una dirección Base58 o dominio .sol..."
-                        class="flex-1 bg-transparent px-6 py-4 text-slate-900 font-semibold mono text-sm outline-none placeholder:text-slate-400"
+                        class="flex-1 bg-transparent px-6 py-4 font-semibold mono text-sm outline-none"
+                        style="color:var(--txt);"
                         onkeypress="if(event.key==='Enter') initAudit()">
                     <button id="runBtn" onclick="initAudit()"
                         class="btn-primary px-8 py-4 rounded-xl text-sm font-bold uppercase tracking-widest flex items-center justify-center min-w-[200px]">
@@ -142,524 +380,300 @@
                     </button>
                 </div>
             </div>
-
             <div class="mt-4 flex flex-wrap gap-2 text-xs items-center px-2">
-                <span class="text-slate-500 font-bold uppercase tracking-wider">Investigar:</span>
-                <button onclick="setWallet('9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM')" class="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold rounded-md transition-colors">🏛️ Solana Foundation</button>
-                <button onclick="setWallet('5TZNUuuZ8dM9A9DbnwzW6WJjBwV2m5f5BqHqNn2bFqJ5')" class="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold rounded-md transition-colors">🐋 Binance Hot Wallet</button>
-                <button onclick="setWallet('toly.sol')" class="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold rounded-md transition-colors">👨‍💻 toly.sol</button>
+                <span class="font-bold uppercase tracking-wider" style="color:var(--txt2);">Investigar:</span>
+                <button onclick="setWallet('9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM')" class="px-3 py-1.5 quick-tag font-semibold rounded-md transition-colors">🏛️ Solana Foundation</button>
+                <button onclick="setWallet('5TZNUuuZ8dM9A9DbnwzW6WJjBwV2m5f5BqHqNn2bFqJ5')" class="px-3 py-1.5 quick-tag font-semibold rounded-md transition-colors">🐋 Binance Hot Wallet</button>
+                <button onclick="setWallet('toly.sol')" class="px-3 py-1.5 quick-tag font-semibold rounded-md transition-colors">👨‍💻 toly.sol</button>
             </div>
             <div id="recentSearches" class="mt-2 flex flex-wrap gap-2 text-xs items-center px-2 hidden">
-                <span class="text-slate-500 font-bold uppercase tracking-wider">Recientes:</span>
+                <span class="font-bold uppercase tracking-wider" style="color:var(--txt2);">Recientes:</span>
                 <div id="recentTags" class="flex gap-2"></div>
             </div>
         </div>
 
-        <div id="errorAlert" class="hidden max-w-4xl mx-auto mb-8 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3 text-red-700 text-sm font-semibold">
+        <!-- Error -->
+        <div id="errorAlert" class="hidden max-w-4xl mx-auto mb-8 p-4 rounded-xl flex items-center gap-3 text-sm font-semibold error-alert">
             <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
             <span id="errorMsg"></span>
         </div>
 
+        <!-- Dashboard -->
         <div id="dashboard" class="hidden space-y-6 animate-fade-in">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="glass-panel p-6 border-t-4 border-[#14F195]">
-                    <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Balance Principal</p>
-                    <h2 id="dispBal" class="text-3xl font-extrabold text-slate-900 tracking-tight">0.00 <span class="text-lg text-slate-400 font-medium">SOL</span></h2>
-                    <p id="dispUsd" class="text-sm font-semibold text-[#14F195] mt-1">Calculando...</p>
+                <div class="glass-panel p-6 stat-border-grn">
+                    <p class="text-[11px] font-bold uppercase tracking-wider mb-2" style="color:var(--txt2);">Balance Principal</p>
+                    <h2 id="dispBal" class="text-3xl font-extrabold tracking-tight" style="color:var(--txt);">0.00 <span class="text-lg font-medium" style="color:var(--txt2);">SOL</span></h2>
+                    <p id="dispUsd" class="text-sm font-semibold mt-1" style="color:#14F195;">Calculando...</p>
                 </div>
-                <div class="glass-panel p-6 border-t-4 border-[#9945FF]">
-                    <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Estado de Billetera</p>
-                    <h2 id="dispType" class="text-lg font-bold text-slate-900 uppercase mt-1">---</h2>
-                    <!-- SNS resolution display -->
+                <div class="glass-panel p-6 stat-border-sol">
+                    <p class="text-[11px] font-bold uppercase tracking-wider mb-2" style="color:var(--txt2);">Estado de Billetera</p>
+                    <h2 id="dispType" class="text-lg font-bold uppercase mt-1" style="color:var(--txt);">---</h2>
                     <div id="snsInfo" class="hidden mt-3"></div>
                 </div>
-                <div class="glass-panel p-6 border-t-4 border-slate-300">
-                    <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Identidad de Red</p>
-                    <h2 id="dispId" class="text-xs font-bold text-slate-600 mono truncate mt-2 bg-slate-100 p-2 rounded-lg border border-slate-200">---</h2>
+                <div class="glass-panel p-6 stat-border-bdr">
+                    <p class="text-[11px] font-bold uppercase tracking-wider mb-2" style="color:var(--txt2);">Identidad de Red</p>
+                    <h2 id="dispId" class="text-xs font-bold mono truncate mt-2 p-2 rounded-lg disp-id-box" style="color:var(--txt2);">---</h2>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div class="glass-panel overflow-hidden border border-slate-200">
-                    <div class="px-6 py-4 border-b border-slate-100 bg-white flex justify-between items-center">
-                        <span class="text-xs font-bold tracking-widest text-slate-800 uppercase">Activos SPL Detectados</span>
-                        <span id="tokenStatus" class="text-[10px] font-bold text-slate-400 uppercase"></span>
+                <!-- Token Table -->
+                <div class="glass-panel overflow-hidden card-panel">
+                    <div class="px-6 py-4 border-b flex justify-between items-center card-header-bg" style="border-color:var(--bdr);">
+                        <span class="text-xs font-bold tracking-widest uppercase" style="color:var(--txt);">Activos SPL Detectados</span>
+                        <span id="tokenStatus" class="text-[10px] font-bold uppercase" style="color:var(--txt3);"></span>
                     </div>
-                    <div class="overflow-y-auto max-h-[400px] bg-slate-50/50">
+                    <div class="overflow-y-auto max-h-[400px] tbl-body-bg">
                         <table class="w-full text-left mono text-[12px]">
-                            <thead class="bg-slate-100 text-slate-500 uppercase text-[10px] sticky top-0 shadow-sm z-10">
+                            <thead class="tbl-head-row text-[10px] sticky top-0 shadow-sm z-10" style="color:var(--txt2);">
                                 <tr>
-                                    <th class="px-6 py-3 font-semibold">Contrato (Mint)</th>
-                                    <th class="px-6 py-3 font-semibold text-right">Cantidad</th>
+                                    <th class="px-6 py-3 font-semibold uppercase tracking-wider">Contrato (Mint)</th>
+                                    <th class="px-6 py-3 font-semibold text-right uppercase tracking-wider">Cantidad</th>
                                 </tr>
                             </thead>
-                            <tbody id="tokenLogs" class="divide-y divide-slate-200 text-slate-700"></tbody>
+                            <tbody id="tokenLogs" style="color:var(--txt2);"></tbody>
                         </table>
-                        <div id="noTokens" class="hidden p-8 text-center text-slate-400 uppercase text-xs font-bold tracking-widest">Sin tokens adicionales</div>
+                        <div id="noTokens" class="hidden p-8 text-center uppercase text-xs font-bold tracking-widest" style="color:var(--txt3);">Sin tokens adicionales</div>
                     </div>
                 </div>
-
-                <div class="glass-panel overflow-hidden border border-slate-200">
-                    <div class="px-6 py-4 border-b border-slate-100 bg-white flex justify-between items-center">
-                        <span class="text-xs font-bold tracking-widest text-slate-800 uppercase">Últimos Movimientos</span>
-                        <span id="txStatus" class="text-[10px] font-bold text-slate-400 uppercase"></span>
+                <!-- TX Table -->
+                <div class="glass-panel overflow-hidden card-panel">
+                    <div class="px-6 py-4 border-b flex justify-between items-center card-header-bg" style="border-color:var(--bdr);">
+                        <span class="text-xs font-bold tracking-widest uppercase" style="color:var(--txt);">Últimos Movimientos</span>
+                        <span id="txStatus" class="text-[10px] font-bold uppercase" style="color:var(--txt3);"></span>
                     </div>
-                    <div class="overflow-y-auto max-h-[400px] bg-slate-50/50">
+                    <div class="overflow-y-auto max-h-[400px] tbl-body-bg">
                         <table class="w-full text-left mono text-[12px]">
-                            <thead class="bg-slate-100 text-slate-500 uppercase text-[10px] sticky top-0 shadow-sm z-10">
+                            <thead class="tbl-head-row text-[10px] sticky top-0 shadow-sm z-10" style="color:var(--txt2);">
                                 <tr>
-                                    <th class="px-6 py-3 font-semibold">Firma / Tipo</th>
-                                    <th class="px-6 py-3 font-semibold text-right">Estado</th>
+                                    <th class="px-6 py-3 font-semibold uppercase tracking-wider">Firma / Tipo</th>
+                                    <th class="px-6 py-3 font-semibold text-right uppercase tracking-wider">Estado</th>
                                 </tr>
                             </thead>
-                            <tbody id="txLogs" class="divide-y divide-slate-200 text-slate-700"></tbody>
+                            <tbody id="txLogs" style="color:var(--txt2);"></tbody>
                         </table>
-                        <div id="noData" class="hidden p-8 text-center text-slate-400 uppercase text-xs font-bold tracking-widest">Sin registros recientes</div>
+                        <div id="noData" class="hidden p-8 text-center uppercase text-xs font-bold tracking-widest" style="color:var(--txt3);">Sin registros recientes</div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8 text-slate-600">
-            <div class="glass-panel p-8">
-                <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center mb-6 text-blue-600">
+        <!-- Feature cards -->
+        <div class="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="glass-panel p-8" style="color:var(--txt2);">
+                <div class="w-12 h-12 rounded-xl flex items-center justify-center mb-6 feat-ico-1">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                 </div>
-                <h3 class="text-lg font-bold text-slate-900 mb-3">Transparencia Total</h3>
-                <p class="text-sm leading-relaxed">Solana Guard extrae datos crudos directamente de la cadena de bloques. No almacenamos registros ni intervenimos la información, garantizando una vista pura y auditable de cualquier cuenta pública.</p>
+                <h3 class="text-lg font-bold mb-3" style="color:var(--txt);">Transparencia Total</h3>
+                <p class="text-sm leading-relaxed">Solana Guard extrae datos crudos directamente de la cadena de bloques. No almacenamos registros ni intervenimos la información.</p>
             </div>
-            <div class="glass-panel p-8">
-                <div class="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center mb-6 text-green-600">
+            <div class="glass-panel p-8" style="color:var(--txt2);">
+                <div class="w-12 h-12 rounded-xl flex items-center justify-center mb-6 feat-ico-2">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
                 </div>
-                <h3 class="text-lg font-bold text-slate-900 mb-3">Gestión de Riesgo</h3>
-                <p class="text-sm leading-relaxed">La información es poder, pero la prudencia es vital en DeFi. Utiliza esta herramienta para mantener siempre un margen de seguridad en tus evaluaciones.</p>
+                <h3 class="text-lg font-bold mb-3" style="color:var(--txt);">Gestión de Riesgo</h3>
+                <p class="text-sm leading-relaxed">La información es poder, pero la prudencia es vital en DeFi. Mantén siempre un margen de seguridad en tus evaluaciones.</p>
             </div>
-            <div class="glass-panel p-8">
-                <div class="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center mb-6 text-purple-600">
+            <div class="glass-panel p-8" style="color:var(--txt2);">
+                <div class="w-12 h-12 rounded-xl flex items-center justify-center mb-6 feat-ico-3">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                 </div>
-                <h3 class="text-lg font-bold text-slate-900 mb-3">Rendimiento Institucional</h3>
-                <p class="text-sm leading-relaxed">Conectados mediante nodos RPC de latencia ultra baja, aseguramos que los saldos y resoluciones de dominios (SNS) mostrados estén confirmados en el estado más reciente de la red principal.</p>
+                <h3 class="text-lg font-bold mb-3" style="color:var(--txt);">Rendimiento Institucional</h3>
+                <p class="text-sm leading-relaxed">Nodos RPC de latencia ultra baja aseguran que los saldos y resoluciones SNS estén confirmados en el estado más reciente.</p>
             </div>
         </div>
 
-        <footer class="mt-16 pt-8 border-t border-slate-200 text-center text-xs text-slate-400 font-medium">
-            <p>© <span id="footerYear"></span> <strong class="text-slate-600">Solana Guard</strong> — Built by <strong class="text-[#9945FF]">AlbertoTrujillo</strong></p>
+        <footer class="mt-16 pt-8 text-center text-xs font-medium" style="color:var(--txt3);">
+            <p>© <span id="footerYear"></span> <strong style="color:var(--txt2);">Solana Guard</strong> — Built by <strong style="color:#9945FF;">AlbertoTrujillo</strong></p>
             <p class="mt-1">Advanced OSINT tool for Solana blockchain · Not financial advice · Data via Helius RPC</p>
         </footer>
     </main>
 
-    <!-- ══════════════════════════════════════════════════════ -->
-    <!--  GOOGLE TRANSLATE                                      -->
-    <!-- ══════════════════════════════════════════════════════ -->
+    <!-- GOOGLE TRANSLATE -->
     <script>
-        function googleTranslateElementInit() {
-            new google.translate.TranslateElement({ pageLanguage: 'es', includedLanguages: 'es,en,fr,pt,ca,de,it,ru,ar,ja,zh-CN', autoDisplay: false, layout: google.translate.TranslateElement.InlineLayout.NONE }, 'google_translate_element');
-        }
-        function killGTBanner() { document.body.style.top='0px'; document.body.style.position='static'; document.querySelectorAll('.goog-te-banner-frame,iframe.goog-te-banner-frame,#goog-gt-tt,.goog-te-balloon-frame').forEach(el=>{el.style.display='none';el.style.visibility='hidden';}); }
+        function googleTranslateElementInit(){new google.translate.TranslateElement({pageLanguage:'es',includedLanguages:'es,en,fr,pt,ca,de,it,ru,ar,ja,zh-CN',autoDisplay:false,layout:google.translate.TranslateElement.InlineLayout.NONE},'google_translate_element');}
+        function killGTBanner(){document.body.style.top='0px';document.body.style.position='static';document.querySelectorAll('.goog-te-banner-frame,iframe.goog-te-banner-frame,#goog-gt-tt,.goog-te-balloon-frame').forEach(el=>{el.style.display='none';el.style.visibility='hidden';});}
         [300,800,1500,3000,5000].forEach(ms=>setTimeout(killGTBanner,ms));
     </script>
     <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
-    <!-- ══════════════════════════════════════════════════════ -->
-    <!--  LANGUAGE SELECTOR                                     -->
-    <!-- ══════════════════════════════════════════════════════ -->
+    <!-- THEME + LANG + CORE -->
     <script>
-        function toggleLang() { document.getElementById('langTrigger').classList.toggle('open'); document.getElementById('langDropdown').classList.toggle('open'); }
-        function closeLang() { document.getElementById('langTrigger').classList.remove('open'); document.getElementById('langDropdown').classList.remove('open'); }
-        document.addEventListener('click', e => { if (!document.getElementById('langSelectorWrapper').contains(e.target)) closeLang(); });
-        function pickLang(lang, flag, name) {
-            document.getElementById('curFlag').textContent = flag;
-            document.getElementById('curName').textContent = name;
-            document.querySelectorAll('.lang-opt').forEach(el => el.classList.toggle('active', el.dataset.lang === lang));
+        // ══ THEME SYSTEM ══
+        function getTheme(){ try{ return localStorage.getItem('sgTheme')||'light'; }catch(e){ return 'light'; } }
+        function setTheme(t){
+            document.documentElement.setAttribute('data-theme',t);
+            try{ localStorage.setItem('sgTheme',t); }catch(e){}
+            updateThemeIcon(t);
+        }
+        function toggleTheme(){ setTheme(getTheme()==='dark'?'light':'dark'); }
+        function updateThemeIcon(t){
+            const ic=document.getElementById('themeIcon');
+            if(!ic) return;
+            if(t==='dark'){
+                ic.innerHTML='<path d="M21 12.79A9 9 0 1111.21 3a7 7 0 109.79 9.79z"/>';
+            } else {
+                ic.innerHTML='<path d="M12 3v1m0 16v1M4.22 4.22l.707.707m12.73 12.73.707.707M3 12h1m16 0h1M4.22 19.78l.707-.707m12.73-12.73.707-.707M12 7a5 5 0 100 10A5 5 0 0012 7z"/>';
+            }
+        }
+        // Init icon on load
+        updateThemeIcon(getTheme());
+
+        // ══ LANGUAGE SELECTOR ══
+        function toggleLang(){document.getElementById('langTrigger').classList.toggle('open');document.getElementById('langDropdown').classList.toggle('open');}
+        function closeLang(){document.getElementById('langTrigger').classList.remove('open');document.getElementById('langDropdown').classList.remove('open');}
+        document.addEventListener('click',e=>{if(!document.getElementById('langSelectorWrapper').contains(e.target))closeLang();});
+        function pickLang(lang,flag,name){
+            document.getElementById('curFlag').textContent=flag;
+            document.getElementById('curName').textContent=name;
+            document.querySelectorAll('.lang-opt').forEach(el=>el.classList.toggle('active',el.dataset.lang===lang));
             closeLang();
-            setTimeout(() => { const combo = document.querySelector('.goog-te-combo'); if (combo) { combo.value = lang; combo.dispatchEvent(new Event('change')); } }, 200);
-            try { localStorage.setItem('sgLang', lang+'|'+flag+'|'+name); } catch(e) {}
+            setTimeout(()=>{const c=document.querySelector('.goog-te-combo');if(c){c.value=lang;c.dispatchEvent(new Event('change'));}},200);
+            try{localStorage.setItem('sgLang',lang+'|'+flag+'|'+name);}catch(e){}
         }
-        window.addEventListener('load', () => {
-            document.getElementById('footerYear').textContent = new Date().getFullYear();
+        window.addEventListener('load',()=>{
+            document.getElementById('footerYear').textContent=new Date().getFullYear();
             renderHistory();
-            try {
-                const saved = localStorage.getItem('sgLang');
-                if (saved) { const [lang,flag,name]=saved.split('|'); setTimeout(()=>pickLang(lang,flag,name),800); }
-                else { const sl=(navigator.language||'').split('-')[0]; const auto={en:['en','🇺🇸','English'],fr:['fr','🇫🇷','Français'],pt:['pt','🇧🇷','Português'],de:['de','🇩🇪','Deutsch'],it:['it','🇮🇹','Italiano'],ru:['ru','🇷🇺','Русский'],ar:['ar','🇸🇦','العربية'],ja:['ja','🇯🇵','日本語'],zh:['zh-CN','🇨🇳','中文']}; if(auto[sl]) setTimeout(()=>pickLang(...auto[sl]),800); }
-            } catch(e) {}
-            // ── Auto-audit desde URL param: index.html?wallet=ADDR ──
-            try {
-                const params = new URLSearchParams(window.location.search);
-                const w = params.get('wallet');
-                if (w) {
-                    document.getElementById('walletInput').value = decodeURIComponent(w);
-                    setTimeout(initAudit, 900);
-                }
-            } catch(e) {}
-        });
-    </script>
-
-    <!-- ══════════════════════════════════════════════════════ -->
-    <!--  CONFIGURACIÓN SEGURA — API KEY OFUSCADA               -->
-    <!--                                                        -->
-    <!--  NOTA: Para máxima seguridad, sustituye getEndpoint()  -->
-    <!--  por una llamada a tu propio proxy backend:            -->
-    <!--  const RPC = await fetch('/api/rpc-proxy', {...})      -->
-    <!--  Ver README_SECURITY.md incluido en el .zip            -->
-    <!-- ══════════════════════════════════════════════════════ -->
-    <script>
-        // Clave partida + invertida — dificulta scraping automático y bots.
-        // NO es cifrado real: un proxy backend es la solución definitiva.
-        const _cfg = (()=>{
-            const p = ['mainnet.helius-rpc','https://','com/?api-key='];
-            const k = ['80','cb0','1','9fa','186e-463','32-','7-97fa-e2981931','1a9f7','8'];
-            // Reensambla en runtime: URL base + fragmentos de clave reordenados
-            return ()=> p[1]+p[0]+'.'+p[2]+k[7]+k[6].split('').reverse().join('')
-                .replace('796-e7f49812e','').slice(0,0)  // dummy
-                + [k[7],k[5],k[8],k[2],k[4],k[1],k[3],k[0]].join('').replace(/[^a-f0-9\-]/g,'');
-        })();
-        // Para uso: getEndpoint() devuelve el RPC URL completo
-        function getEndpoint() {
-            // Fragmentos reales ensamblados en orden correcto
-            const base  = atob('aHR0cHM6Ly9tYWlubmV0LmhlbGl1cy1ycGMuY29tLz9hcGkta2V5PQ==');
-            const parts = ['MWE5Zj', 'c4MzIt', 'MTg2ZS', '00NjM3', 'LTk3ZmEt', 'ZTI5ODE5', 'MzFjYjA4'];
-            return base + atob(parts.join(''));
-        }
-    </script>
-
-    <!-- ══════════════════════════════════════════════════════ -->
-    <!--  LÓGICA PRINCIPAL                                      -->
-    <!-- ══════════════════════════════════════════════════════ -->
-    <script>
-        function waitForSolana(cb, tries) {
-            tries = tries || 0;
-            if (typeof solanaWeb3 !== 'undefined') { cb(); return; }
-            if (tries > 50) { console.error('solanaWeb3 no cargó tras 5s'); return; }
-            setTimeout(() => waitForSolana(cb, tries+1), 100);
-        }
-
-        let rpc, TOKEN_PROGRAM_ID;
-        waitForSolana(function() {
-            rpc = new solanaWeb3.Connection(getEndpoint(), 'confirmed');
-            TOKEN_PROGRAM_ID = new solanaWeb3.PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA');
+            try{
+                const sv=localStorage.getItem('sgLang');
+                if(sv){const[l,f,n]=sv.split('|');setTimeout(()=>pickLang(l,f,n),800);}
+                else{const sl=(navigator.language||'').split('-')[0];const au={en:['en','🇺🇸','English'],fr:['fr','🇫🇷','Français'],pt:['pt','🇧🇷','Português'],de:['de','🇩🇪','Deutsch'],it:['it','🇮🇹','Italiano'],ru:['ru','🇷🇺','Русский'],ar:['ar','🇸🇦','العربية'],ja:['ja','🇯🇵','日本語'],zh:['zh-CN','🇨🇳','中文']};if(au[sl])setTimeout(()=>pickLang(...au[sl]),800);}
+            }catch(e){}
+            try{
+                const p=new URLSearchParams(window.location.search);
+                const w=p.get('wallet');
+                if(w){document.getElementById('walletInput').value=decodeURIComponent(w);setTimeout(initAudit,900);}
+            }catch(e){}
         });
 
-        // ══════════════════════════════════════════════════════
-        // RESOLUCIÓN SNS (.sol) — MÉTODO ROBUSTO CON 3 CAPAS
-        // ══════════════════════════════════════════════════════
-        //
-        // La resolución SNS de Bonfida funciona así:
-        //   1. PDA del registro de dominio (nameAccountKey)
-        //   2. El dueño puede estar en data[32..64] del name record
-        //      O bien en el campo `owner` de la AccountInfo
-        //   3. El "reverse look-up" confirma el owner
-        //
-        // Problema del código original: usaba `accountInfo.data.slice(32,64)`
-        // directamente sobre el name record — pero ese campo es el PARENT,
-        // no el owner. El owner real está en accountInfo.owner o en la subclave
-        // de reverse lookup. Esta versión implementa los 3 métodos en cascada.
-        // ══════════════════════════════════════════════════════
+        // ══ API KEY ══
+        function getEndpoint(){const b=atob('aHR0cHM6Ly9tYWlubmV0LmhlbGl1cy1ycGMuY29tLz9hcGkta2V5PQ==');const p=['MWE5Zj','c4MzIt','MTg2ZS','00NjM3','LTk3ZmEt','ZTI5ODE5','MzFjYjA4'];return b+atob(p.join(''));}
 
-        const SNS_PROGRAM_ID = 'namesLPneVptA9Z5rqUDD9tMTWEJwofgaYwp8cawRkX';
-        const SOL_TLD_PUBKEY  = '58PwtjSDuFHuUkYjH9BYnnQKHfwo9reZhC2zMJv9JPkx';
+        // ══ RPC ══
+        let rpc,TOKEN_PROGRAM_ID;
+        function waitForSolana(cb,t){t=t||0;if(typeof solanaWeb3!=='undefined'){cb();return;}if(t>60)return;setTimeout(()=>waitForSolana(cb,t+1),100);}
+        waitForSolana(()=>{rpc=new solanaWeb3.Connection(getEndpoint(),'confirmed');TOKEN_PROGRAM_ID=new solanaWeb3.PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA');});
 
-        async function hashDomainName(name) {
-            const nameBytes = new TextEncoder().encode(name);
-            const prefixed  = new Uint8Array(1 + nameBytes.length);
-            prefixed[0]     = 0x00;   // prefijo nulo obligatorio en el protocolo SNS
-            prefixed.set(nameBytes, 1);
-            const hashBuf   = await crypto.subtle.digest('SHA-256', prefixed);
-            return new Uint8Array(hashBuf);
+        // ══ SNS RESOLUTION — 3 layers ══
+        async function resolveSolDomain(input){
+            const name=input.toLowerCase().trim().replace(/\.sol$/,'');
+            if(!name)throw new Error('Nombre de dominio vacío.');
+            let rKey=null,method='';
+            try{const r=await fetch(`https://sns-sdk-proxy.bonfida.workers.dev/resolve/${encodeURIComponent(name)}`);if(r.ok){const j=await r.json();if(j?.result){rKey=new solanaWeb3.PublicKey(j.result);method='Bonfida';}}}catch(_){}
+            if(!rKey){try{
+                const SNS=new solanaWeb3.PublicKey('namesLPneVptA9Z5rqUDD9tMTWEJwofgaYwp8cawRkX');
+                const TLD=new solanaWeb3.PublicKey('58PwtjSDuFHuUkYjH9BYnnQKHfwo9reZhC2zMJv9JPkx');
+                const nb=new TextEncoder().encode(name);const pre=new Uint8Array(1+nb.length);pre[0]=0;pre.set(nb,1);
+                const hb=await crypto.subtle.digest('SHA-256',pre);
+                const[pda]=await solanaWeb3.PublicKey.findProgramAddress([new Uint8Array(hb),TLD.toBuffer()],SNS);
+                const info=await rpc.getAccountInfo(pda,'confirmed');
+                if(info&&info.data&&info.data.length>=96){const ZERO=new solanaWeb3.PublicKey('11111111111111111111111111111111');const ow=new solanaWeb3.PublicKey(info.data.slice(32,64));if(!ow.equals(ZERO)){rKey=ow;method='NameRecord';}}
+            }catch(_){}}
+            if(!rKey){try{const body={jsonrpc:'2.0',id:1,method:'getAccountInfo',params:[name+'.sol',{encoding:'base64'}]};const r=await fetch(getEndpoint(),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const j=await r.json();const own=j?.result?.value?.owner;if(own&&own!=='11111111111111111111111111111111'){rKey=new solanaWeb3.PublicKey(own);method='Helius';}}catch(_){}}
+            if(!rKey)throw new Error(`No se pudo resolver "${name}.sol". Verifica que el dominio esté registrado.`);
+            return{key:rKey,domain:name+'.sol',method};
         }
 
-        async function getNameAccountKey(hashedName, nameClassKey, parentKey) {
-            const SNS_PK   = new solanaWeb3.PublicKey(SNS_PROGRAM_ID);
-            const seeds    = [hashedName];
-            if (nameClassKey) seeds.push(nameClassKey.toBuffer());
-            else seeds.push(Buffer.alloc(32));
-            if (parentKey) seeds.push(parentKey.toBuffer());
-            else seeds.push(Buffer.alloc(32));
-            const [pda] = await solanaWeb3.PublicKey.findProgramAddress(seeds, SNS_PK);
-            return pda;
+        // ══ HISTORY ══
+        function setWallet(a){document.getElementById('walletInput').value=a;initAudit();}
+        function saveToHistory(w){try{let h=JSON.parse(localStorage.getItem('solanaGuardHistory')||'[]');if(!h.includes(w)){h.unshift(w);if(h.length>5)h.pop();localStorage.setItem('solanaGuardHistory',JSON.stringify(h));}renderHistory();}catch(e){}}
+        function renderHistory(){try{let h=JSON.parse(localStorage.getItem('solanaGuardHistory')||'[]');const c=document.getElementById('recentSearches');if(h.length>0){c.classList.remove('hidden');document.getElementById('recentTags').innerHTML=h.map(w=>`<button onclick="setWallet('${w}')" class="px-3 py-1 recent-tag font-semibold rounded-md transition-colors truncate max-w-[120px]" title="${w}">${w.substring(0,8)}...</button>`).join('');}}catch(e){}}
+
+        // ══ PRICE ══
+        async function loadPriceAsync(sol){try{const r=await fetch('https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd');if(r.ok){const d=await r.json();document.getElementById('dispUsd').innerText=`≈ $${(sol*d.solana.usd).toFixed(2)} USD`;}}catch(e){document.getElementById('dispUsd').innerText='Precio no disponible';}}
+
+        // ══ TOKEN ROW HELPER ══
+        function txTagStyle(tag){
+            const isDark=getTheme()==='dark';
+            if(tag==='Jupiter Swap') return isDark?'background:rgba(20,241,149,.12);color:#14F195;':'background:#dcfce7;color:#15803d;';
+            if(tag==='Raydium')      return isDark?'background:rgba(88,166,255,.12);color:#58a6ff;':'background:#dbeafe;color:#1d4ed8;';
+            if(tag==='Pump.fun')     return isDark?'background:rgba(227,179,65,.12);color:#e3b341;':'background:#fef9c3;color:#a16207;';
+            return isDark?'background:rgba(255,255,255,.07);color:#8b949e;':'background:#f1f5f9;color:#475569;';
+        }
+        function txStatusStyle(isErr){
+            const isDark=getTheme()==='dark';
+            return isErr
+                ?(isDark?'background:rgba(248,81,73,.12);color:#f85149;':'background:#fee2e2;color:#b91c1c;')
+                :(isDark?'background:rgba(20,241,149,.1);color:#14F195;':'background:#dcfce7;color:#15803d;');
         }
 
-        // Método 1: Leer el owner del NameRecord header
-        // El NameRecord layout: [32 bytes parentName | 32 bytes owner | 32 bytes class | data...]
-        async function resolveViaNameRecord(domainKey) {
-            const info = await rpc.getAccountInfo(domainKey, 'confirmed');
-            if (!info || !info.data || info.data.length < 96) return null;
-            const ZERO = new solanaWeb3.PublicKey('11111111111111111111111111111111');
-            // offset 32: owner field en el header del NameRecord
-            const ownerBytes = info.data.slice(32, 64);
-            const ownerKey   = new solanaWeb3.PublicKey(ownerBytes);
-            if (!ownerKey.equals(ZERO)) return ownerKey;
-            return null;
-        }
-
-        // Método 2: Helius getDomainKeysWithReverses vía JSON-RPC getAccountInfo
-        // sobre la cuenta "twitter-verified" — fallback si el header no tiene owner
-        async function resolveViaHeliusSNS(domainName) {
-            try {
-                const url = getEndpoint();
-                const body = {
-                    jsonrpc: '2.0', id: 1, method: 'getAccountInfo',
-                    params: [domainName + '.sol', { encoding: 'base64' }]
-                };
-                const res  = await fetch(url, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
-                const json = await res.json();
-                // Si Helius resuelve via SNS, devuelve el owner en value.owner
-                if (json?.result?.value?.owner) {
-                    const owner = json.result.value.owner;
-                    if (owner !== '11111111111111111111111111111111') {
-                        return new solanaWeb3.PublicKey(owner);
-                    }
-                }
-            } catch(_) {}
-            return null;
-        }
-
-        // Método 3: Resolución via Bonfida API pública (fallback final)
-        async function resolveViaBonfidaAPI(domainName) {
-            try {
-                const res  = await fetch(`https://sns-sdk-proxy.bonfida.workers.dev/resolve/${domainName}`);
-                const json = await res.json();
-                if (json?.result) return new solanaWeb3.PublicKey(json.result);
-            } catch(_) {}
-            return null;
-        }
-
-        async function resolveSolDomain(input) {
-            if (typeof solanaWeb3 === 'undefined') throw new Error('La librería Solana aún está cargando. Recarga e inténtalo.');
-            const name = input.toLowerCase().trim().replace(/\.sol$/, '');
-            if (!name || name.length < 1) throw new Error('Nombre de dominio inválido.');
-
-            let resolvedKey = null;
-            let method      = '';
-
-            try {
-                // Calcular el PDA del dominio
-                const hashedName = await hashDomainName(name);
-                const TLD_PK     = new solanaWeb3.PublicKey(SOL_TLD_PUBKEY);
-                const domainKey  = await getNameAccountKey(hashedName, null, TLD_PK);
-
-                // Capa 1: NameRecord header
-                resolvedKey = await resolveViaNameRecord(domainKey);
-                if (resolvedKey) { method = 'NameRecord'; }
-
-                // Capa 2: Helius RPC (si la capa 1 falla)
-                if (!resolvedKey) {
-                    resolvedKey = await resolveViaHeliusSNS(name);
-                    if (resolvedKey) { method = 'Helius RPC'; }
-                }
-            } catch(e) {
-                // Si el cálculo del PDA falla, saltar directo a capa 3
-            }
-
-            // Capa 3: Bonfida API pública (fallback final)
-            if (!resolvedKey) {
-                resolvedKey = await resolveViaBonfidaAPI(name);
-                if (resolvedKey) { method = 'Bonfida API'; }
-            }
-
-            if (!resolvedKey) throw new Error(`No se pudo resolver "${name}.sol". El dominio puede no estar registrado o no tener propietario asignado.`);
-
-            return { key: resolvedKey, domain: name + '.sol', method };
-        }
-
-        // ══════════════════════════════════════════════════════
-        //  HELPERS
-        // ══════════════════════════════════════════════════════
-        function setWallet(address) {
-            document.getElementById('walletInput').value = address;
-            initAudit();
-        }
-
-        function saveToHistory(wallet) {
-            try {
-                let h = JSON.parse(localStorage.getItem('solanaGuardHistory') || '[]');
-                if (!h.includes(wallet)) { h.unshift(wallet); if(h.length>5) h.pop(); localStorage.setItem('solanaGuardHistory', JSON.stringify(h)); }
-                renderHistory();
-            } catch(e) {}
-        }
-
-        function renderHistory() {
-            try {
-                let h = JSON.parse(localStorage.getItem('solanaGuardHistory') || '[]');
-                const container = document.getElementById('recentSearches');
-                if (h.length > 0) {
-                    container.classList.remove('hidden');
-                    document.getElementById('recentTags').innerHTML = h.map(w =>
-                        `<button onclick="setWallet('${w}')" class="px-3 py-1 bg-[#9945FF]/10 text-[#9945FF] hover:bg-[#9945FF]/20 font-semibold rounded-md transition-colors truncate max-w-[120px]" title="${w}">${w.substring(0,8)}...</button>`
-                    ).join('');
-                }
-            } catch(e) {}
-        }
-
-        async function loadPriceAsync(solBalance) {
-            try {
-                const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd');
-                if (res.ok) {
-                    const data = await res.json();
-                    document.getElementById('dispUsd').innerText = `≈ $${(solBalance * data.solana.usd).toFixed(2)} USD`;
-                }
-            } catch(e) { document.getElementById('dispUsd').innerText = 'Precio no disponible'; }
-        }
-
-        async function loadTokensAsync(targetKey) {
-            const tokenStatus = document.getElementById('tokenStatus');
-            const noTokens    = document.getElementById('noTokens');
-            tokenStatus.innerText = 'Buscando...';
-            try {
-                const tokenAccounts = await rpc.getParsedTokenAccountsByOwner(targetKey, { programId: TOKEN_PROGRAM_ID });
-                const valid = tokenAccounts.value.filter(t => t.account.data.parsed.info.tokenAmount.uiAmount > 0);
-                if (valid.length === 0) {
-                    noTokens.classList.remove('hidden');
-                } else {
-                    document.getElementById('tokenLogs').innerHTML = valid
-                        .sort((a,b) => b.account.data.parsed.info.tokenAmount.uiAmount - a.account.data.parsed.info.tokenAmount.uiAmount)
-                        .map(t => {
-                            const mint = t.account.data.parsed.info.mint;
-                            return `<tr class="hover:bg-slate-100 transition-colors">
-                                <td class="px-6 py-3 text-[#9945FF] font-medium truncate max-w-[150px]" title="${mint}">
-                                    <a href="https://solscan.io/token/${mint}" target="_blank" class="hover:underline">${mint.substring(0,8)}...${mint.slice(-4)}</a>
-                                </td>
-                                <td class="px-6 py-3 text-right font-semibold">${t.account.data.parsed.info.tokenAmount.uiAmountString}</td>
-                            </tr>`;
+        // ══ TOKENS ══
+        async function loadTokensAsync(targetKey){
+            const ts=document.getElementById('tokenStatus'),nt=document.getElementById('noTokens');
+            ts.innerText='Buscando...';
+            try{
+                const ta=await rpc.getParsedTokenAccountsByOwner(targetKey,{programId:TOKEN_PROGRAM_ID});
+                const valid=ta.value.filter(t=>t.account.data.parsed.info.tokenAmount.uiAmount>0);
+                if(valid.length===0){nt.classList.remove('hidden');}
+                else{
+                    document.getElementById('tokenLogs').innerHTML=valid
+                        .sort((a,b)=>b.account.data.parsed.info.tokenAmount.uiAmount-a.account.data.parsed.info.tokenAmount.uiAmount)
+                        .map(t=>{
+                            const mint=t.account.data.parsed.info.mint;
+                            const isDark=getTheme()==='dark';
+                            return`<tr class="tbl-row-hover transition-colors"><td class="px-6 py-3 font-medium truncate max-w-[150px]" style="color:#9945FF;" title="${mint}"><a href="https://solscan.io/token/${mint}" target="_blank" style="color:#9945FF;text-decoration:none;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">${mint.substring(0,8)}...${mint.slice(-4)}</a></td><td class="px-6 py-3 text-right font-semibold" style="color:var(--txt);">${t.account.data.parsed.info.tokenAmount.uiAmountString}</td></tr>`;
                         }).join('');
                 }
-            } catch(e) {
-                noTokens.classList.remove('hidden');
-                noTokens.innerText = 'Error al cargar tokens';
-            } finally { tokenStatus.innerText = ''; }
+            }catch(e){nt.classList.remove('hidden');nt.innerText='Error al cargar tokens';}
+            finally{ts.innerText='';}
         }
 
-        async function loadTransactionsAsync(sigs) {
-            const txLogs   = document.getElementById('txLogs');
-            const txStatus = document.getElementById('txStatus');
-            const sigList  = sigs.map(s => s.signature);
-            txStatus.innerText = 'Analizando DEX...';
-            let txHTML = '';
-            try {
-                const parsed = await rpc.getParsedTransactions(sigList, { maxSupportedTransactionVersion: 0 });
-                parsed.forEach((tx, i) => {
-                    const sig=sigList[i]; const isErr=sigs[i].err;
-                    let tag='Transferencia', tagCls='bg-slate-200 text-slate-700';
-                    if (tx?.meta?.logMessages) {
-                        const logs=tx.meta.logMessages;
-                        if (logs.some(m=>m.includes('JUP6LkbZbjS1jKKwapdH67y95y17H4zCCYATqwP2nB1R')||m.includes('Jupiter'))) { tag='Jupiter Swap'; tagCls='bg-green-100 text-green-700'; }
-                        else if (logs.some(m=>m.includes('675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8')||m.includes('Raydium'))) { tag='Raydium'; tagCls='bg-blue-100 text-blue-700'; }
-                        else if (logs.some(m=>m.includes('6EF8rrecthR5Dkzon8Nwu78hRvfX4A1e2IPV2CG2V4s'))) { tag='Pump.fun'; tagCls='bg-yellow-100 text-yellow-700'; }
-                    }
-                    const stCls=isErr?'text-red-600 bg-red-100':'text-green-700 bg-green-100';
-                    txHTML+=`<tr class="hover:bg-slate-100 transition-colors">
-                        <td class="px-6 py-3"><div class="flex flex-col gap-1">
-                            <a href="https://solscan.io/tx/${sig}" target="_blank" class="text-blue-600 hover:underline font-medium">${sig.substring(0,16)}...</a>
-                            <span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold tracking-widest uppercase w-fit ${tagCls}">${tag}</span>
-                        </div></td>
-                        <td class="px-6 py-3 text-right align-top"><span class="px-2 py-1 rounded text-[9px] font-bold tracking-widest ${stCls}">${isErr?'FALLO':'ÉXITO'}</span></td>
-                    </tr>`;
+        // ══ TRANSACTIONS ══
+        async function loadTransactionsAsync(sigs){
+            const tl=document.getElementById('txLogs'),ts=document.getElementById('txStatus');
+            const sl=sigs.map(s=>s.signature);
+            ts.innerText='Analizando DEX...';
+            let html='';
+            try{
+                const parsed=await rpc.getParsedTransactions(sl,{maxSupportedTransactionVersion:0});
+                parsed.forEach((tx,i)=>{
+                    const sig=sl[i],isErr=sigs[i].err;
+                    let tag='Transferencia';
+                    if(tx?.meta?.logMessages){const l=tx.meta.logMessages;if(l.some(m=>m.includes('JUP6LkbZbjS1jKKwapdH67y95y17H4zCCYATqwP2nB1R')||m.includes('Jupiter')))tag='Jupiter Swap';else if(l.some(m=>m.includes('675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8')||m.includes('Raydium')))tag='Raydium';else if(l.some(m=>m.includes('6EF8rrecthR5Dkzon8Nwu78hRvfX4A1e2IPV2CG2V4s')))tag='Pump.fun';}
+                    html+=`<tr class="tbl-row-hover transition-colors"><td class="px-6 py-3"><div class="flex flex-col gap-1"><a href="https://solscan.io/tx/${sig}" target="_blank" style="color:#58a6ff;text-decoration:none;font-size:12px;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">${sig.substring(0,16)}...</a><span style="${txTagStyle(tag)}padding:2px 8px;border-radius:4px;font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;width:fit-content;">${tag}</span></div></td><td class="px-6 py-3 text-right align-top"><span style="${txStatusStyle(isErr)}padding:3px 8px;border-radius:4px;font-size:9px;font-weight:700;letter-spacing:.06em;">${isErr?'FALLO':'ÉXITO'}</span></td></tr>`;
                 });
-            } catch(e) {
-                sigs.forEach(s => {
-                    const stCls=s.err?'text-red-600 bg-red-100':'text-green-700 bg-green-100';
-                    txHTML+=`<tr class="hover:bg-slate-100 transition-colors">
-                        <td class="px-6 py-3"><a href="https://solscan.io/tx/${s.signature}" target="_blank" class="text-blue-600 hover:underline font-medium">${s.signature.substring(0,16)}...</a></td>
-                        <td class="px-6 py-3 text-right"><span class="px-2 py-1 rounded text-[9px] font-bold tracking-widest ${stCls}">${s.err?'FALLO':'ÉXITO'}</span></td>
-                    </tr>`;
-                });
-            } finally { txLogs.innerHTML=txHTML; txStatus.innerText=''; }
+            }catch(e){sigs.forEach(s=>{const stS=txStatusStyle(s.err);html+=`<tr class="tbl-row-hover transition-colors"><td class="px-6 py-3"><a href="https://solscan.io/tx/${s.signature}" target="_blank" style="color:#58a6ff;text-decoration:none;">${s.signature.substring(0,16)}...</a></td><td class="px-6 py-3 text-right"><span style="${stS}padding:3px 8px;border-radius:4px;font-size:9px;font-weight:700;">${s.err?'FALLO':'ÉXITO'}</span></td></tr>`;})}
+            finally{tl.innerHTML=html;ts.innerText='';}
         }
 
-        // ══════════════════════════════════════════════════════
-        //  AUDIT PRINCIPAL
-        // ══════════════════════════════════════════════════════
-        async function initAudit() {
-            if (typeof solanaWeb3 === 'undefined' || !rpc) {
-                showError('La librería Solana aún está cargando. Espera un momento.');
-                return;
-            }
-            const rawInput = document.getElementById('walletInput').value.trim();
-            const dash     = document.getElementById('dashboard');
-            const btn      = document.getElementById('runBtn');
-            const snsInfo  = document.getElementById('snsInfo');
-
+        // ══ MAIN AUDIT ══
+        async function initAudit(){
+            if(typeof solanaWeb3==='undefined'||!rpc){showError('La librería Solana aún está cargando. Espera un momento.');return;}
+            const raw=document.getElementById('walletInput').value.trim();
+            const dash=document.getElementById('dashboard'),btn=document.getElementById('runBtn'),snsInfo=document.getElementById('snsInfo');
             document.getElementById('errorAlert').classList.add('hidden');
-            dash.classList.add('hidden');
-            snsInfo.classList.add('hidden');
+            dash.classList.add('hidden');snsInfo.classList.add('hidden');
             ['txLogs','tokenLogs'].forEach(id=>document.getElementById(id).innerHTML='');
             ['noData','noTokens'].forEach(id=>document.getElementById(id).classList.add('hidden'));
-
-            if (!rawInput) return showError('Por favor, introduce una dirección válida.');
-
-            btn.innerHTML = '<span class="loader"></span> Analizando...';
-            btn.disabled  = true;
-
-            try {
+            if(!raw)return showError('Por favor, introduce una dirección válida.');
+            btn.innerHTML='<span class="loader"></span> Analizando...';btn.disabled=true;
+            try{
                 let targetKey;
-
-                if (rawInput.toLowerCase().endsWith('.sol')) {
-                    // ── Resolución de dominio SNS ──
-                    btn.innerHTML = '<span class="loader"></span> Resolviendo .sol...';
-                    const resolved = await resolveSolDomain(rawInput);
-                    targetKey      = resolved.key;
-
-                    document.getElementById('dispType').innerHTML =
-                        `<span class="sns-badge">🌐 Dominio SNS</span>`;
-
-                    // Mostrar info detallada de la resolución
-                    snsInfo.innerHTML = `
-                        <div class="sns-resolved">
-                            <div class="mb-1"><strong>${resolved.domain}</strong> → resuelto</div>
-                            <div class="text-slate-500 text-[10px] break-all">${resolved.key.toBase58()}</div>
-                            <div class="mt-1 text-[10px] text-slate-400">vía ${resolved.method}</div>
-                        </div>`;
-                    snsInfo.classList.remove('hidden');
-
-                    document.getElementById('dispId').innerText = resolved.key.toBase58();
-
-                } else {
-                    const sanitized = rawInput.replace(/[^1-9A-HJ-NP-Za-km-z]/g, '');
-                    if (sanitized.length < 32 || sanitized.length > 44) throw new Error('Formato de wallet inválido. Debe ser una dirección Base58 (32-44 caracteres).');
-                    targetKey = new solanaWeb3.PublicKey(sanitized);
-                    document.getElementById('dispType').innerText = 'Billetera Estándar';
-                    snsInfo.classList.add('hidden');
-                    document.getElementById('dispId').innerText = sanitized;
+                if(raw.toLowerCase().endsWith('.sol')){
+                    btn.innerHTML='<span class="loader"></span> Resolviendo .sol...';
+                    const resolved=await resolveSolDomain(raw);targetKey=resolved.key;
+                    document.getElementById('dispType').innerHTML=`<span class="sns-badge">🌐 Dominio SNS</span>`;
+                    snsInfo.innerHTML=`<div class="sns-resolved"><div style="margin-bottom:4px;"><strong>${resolved.domain}</strong> → resuelto</div><div style="font-size:10px;color:var(--txt2);word-break:break-all;">${resolved.key.toBase58()}</div><div style="margin-top:4px;font-size:10px;color:var(--txt3);">vía ${resolved.method}</div></div>`;
+                    snsInfo.classList.remove('hidden');document.getElementById('dispId').innerText=resolved.key.toBase58();
+                }else{
+                    const san=raw.replace(/[^1-9A-HJ-NP-Za-km-z]/g,'');
+                    if(san.length<32||san.length>44)throw new Error('Formato de wallet inválido. Debe ser una dirección Base58 (32-44 caracteres).');
+                    targetKey=new solanaWeb3.PublicKey(san);
+                    document.getElementById('dispType').innerText='Billetera Estándar';snsInfo.classList.add('hidden');document.getElementById('dispId').innerText=san;
                 }
-
-                saveToHistory(rawInput);
-
-                btn.innerHTML = '<span class="loader"></span> Cargando datos...';
-
-                const [bal, sigs] = await Promise.all([
-                    rpc.getBalance(targetKey),
-                    rpc.getSignaturesForAddress(targetKey, { limit: 12 })
-                ]);
-
-                const solBalance = bal / 1e9;
-                document.getElementById('dispBal').innerHTML = `${solBalance.toFixed(4)} <span class="text-lg text-slate-400 font-medium">SOL</span>`;
-                document.getElementById('dispUsd').innerText = 'Calculando...';
-
-                dash.classList.remove('hidden');
-                btn.innerHTML = '<span>Iniciar Auditoría</span>';
-                btn.disabled  = false;
-
-                loadPriceAsync(solBalance);
-                loadTokensAsync(targetKey);
-                if (sigs.length === 0) {
-                    document.getElementById('noData').classList.remove('hidden');
-                } else {
-                    loadTransactionsAsync(sigs);
-                }
-
-            } catch(err) {
-                showError(err.message || 'Error al conectar con la red.');
-                btn.innerHTML = '<span>Iniciar Auditoría</span>';
-                btn.disabled  = false;
-            }
+                saveToHistory(raw);btn.innerHTML='<span class="loader"></span> Cargando datos...';
+                const[bal,sigs]=await Promise.all([rpc.getBalance(targetKey),rpc.getSignaturesForAddress(targetKey,{limit:12})]);
+                const sb=bal/1e9;
+                document.getElementById('dispBal').innerHTML=`${sb.toFixed(4)} <span class="text-lg font-medium" style="color:var(--txt2);">SOL</span>`;
+                document.getElementById('dispUsd').innerText='Calculando...';
+                dash.classList.remove('hidden');btn.innerHTML='<span>Iniciar Auditoría</span>';btn.disabled=false;
+                loadPriceAsync(sb);loadTokensAsync(targetKey);
+                if(sigs.length===0)document.getElementById('noData').classList.remove('hidden');
+                else loadTransactionsAsync(sigs);
+            }catch(err){showError(err.message||'Error al conectar con la red.');btn.innerHTML='<span>Iniciar Auditoría</span>';btn.disabled=false;}
         }
-
-        function showError(msg) {
-            document.getElementById('errorMsg').innerText = msg;
-            document.getElementById('errorAlert').classList.remove('hidden');
-        }
+        function showError(msg){document.getElementById('errorMsg').innerText=msg;document.getElementById('errorAlert').classList.remove('hidden');}
     </script>
 </body>
 </html>
